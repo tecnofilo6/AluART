@@ -2,48 +2,97 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AluARTmx AR</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AluARTmx AR • Panel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial}
-#ui{position:fixed;inset:0;z-index:10;color:#fff;pointer-events:none}
-.brand{position:absolute;top:18px;left:18px;background:#000b;padding:10px 13px;border-radius:12px;font-weight:bold}
-.hint{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);background:#000b;padding:13px 16px;border-radius:14px;text-align:center;width:min(86%,420px)}
-#sound{display:none;pointer-events:auto;position:absolute;bottom:90px;left:50%;transform:translateX(-50%);padding:13px 20px;border:0;border-radius:999px;font-weight:bold}
-#msg{display:none;position:absolute;left:15px;right:15px;bottom:18px;background:#7f1d1d;padding:14px;border-radius:12px}
+*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111;font-family:Arial,sans-serif}
+header{background:#111;color:#fff;padding:22px 18px}header strong{letter-spacing:.08em}
+main{max-width:1050px;margin:24px auto;padding:0 16px}.grid{display:grid;grid-template-columns:360px 1fr;gap:20px}
+.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 20px #0001}
+h1{margin:0 0 6px;font-size:25px}h2{margin-top:0}label{display:block;font-weight:700;margin:15px 0 7px}
+input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:15px}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}
+.primary{background:#111;color:#fff;width:100%;margin-top:18px}.danger{background:#fee2e2;color:#991b1b}
+.item{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:10px 0;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.item small{display:block;color:#6b7280;margin-top:4px}.actions{display:flex;gap:7px;flex-wrap:wrap}
+#qrModal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:18px;padding:24px;text-align:center;max-width:360px;width:100%}
+#qr{display:flex;justify-content:center;margin:15px}
+.note{font-size:13px;color:#6b7280;line-height:1.4}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id="ui"><div class="brand">AluARTmx</div><div id="hint" class="hint">Apunta al cuadro para verlo cobrar vida.</div><button id="sound">🔊 Activar sonido</button><div id="msg"></div></div>
-<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<header><strong>AluARTmx • REALIDAD AUMENTADA</strong></header>
+<main>
+<div class="grid">
+<section class="card">
+<h1>Nuevo cuadro</h1>
+<p class="note">Crea un registro y genera su QR. En esta v2 el panel guarda los datos localmente para poder probar el flujo sin servidor.</p>
+<label>ID del cuadro</label>
+<input id="id" placeholder="001">
+<label>Nombre / cliente</label>
+<input id="name" placeholder="Familia Pérez">
+<label>URL de la experiencia AR</label>
+<input id="url" placeholder="https://tu-dominio.com/ar/001">
+<label>Video (URL para la demo)</label>
+<input id="video" placeholder="https://.../video.mp4">
+<button class="primary" onclick="createProject()">Crear cuadro + QR</button>
+</section>
+<section class="card">
+<h2>Mis cuadros</h2>
+<div id="list"></div>
+</section>
+</div>
+</main>
 
-<a-scene id="scene" mindar-image="imageTargetSrc: ../assets/targets.mind; maxTrack: 1;" color-space="sRGB"
- renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
- device-orientation-permission-ui="enabled: false">
- <a-assets><video id="video" src="" playsinline webkit-playsinline loop crossorigin="anonymous"></video></a-assets>
- <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
- <a-entity mindar-image-target="targetIndex: 0">
-   <a-video id="arVideo" src="#video" position="0 0 0" width="1" height=".5625"></a-video>
- </a-entity>
-</a-scene>
+<div id="qrModal">
+<div class="modal">
+<h2 id="qrTitle">QR</h2><div id="qr"></div>
+<p class="note" id="qrUrl"></p>
+<button onclick="downloadQR()">Descargar QR</button>
+<button onclick="closeQR()">Cerrar</button>
+</div></div>
 
 <script>
-const params=new URLSearchParams(location.search), id=params.get('id')||'001';
-const projects=JSON.parse(localStorage.getItem('aluartmx_projects_v2')||'[]');
-const p=projects.find(x=>x.id===id);
-const video=document.querySelector('#video'), btn=document.querySelector('#sound'), hint=document.querySelector('#hint'), msg=document.querySelector('#msg');
-
-if(p && p.video){video.src=p.video;video.load()}
-else{msg.style.display='block';msg.textContent='Este cuadro todavía no tiene video configurado en la demo.'}
-
-const target=document.querySelector('a-entity[mindar-image-target]');
-target.addEventListener('targetFound', async ()=>{
- hint.textContent='¡Cuadro detectado! Reproduciendo…';
- try{await video.play()}catch(e){btn.style.display='block'}
-});
-target.addEventListener('targetLost',()=>{video.pause();btn.style.display='none';hint.textContent='Apunta al cuadro para verlo cobrar vida.'});
-btn.onclick=async()=>{video.muted=false;try{await video.play();btn.style.display='none'}catch(e){}}
+const KEY='aluartmx_projects_v2';
+let currentQR=null;
+function projects(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
+function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
+function createProject(){
+ const id=document.querySelector('#id').value.trim();
+ const name=document.querySelector('#name').value.trim();
+ const url=document.querySelector('#url').value.trim();
+ const video=document.querySelector('#video').value.trim();
+ if(!id||!url){alert('Escribe al menos el ID y la URL de la experiencia.');return}
+ let a=projects(); a=a.filter(x=>x.id!==id);
+ a.unshift({id,name:name||'Sin nombre',url,video,created:new Date().toISOString()}); save(a);
+ showQR(a[0]); render();
+}
+function showQR(p){
+ currentQR=p;
+ document.querySelector('#qrTitle').textContent=`AluARTmx • ${p.id}`;
+ document.querySelector('#qrUrl').textContent=p.url;
+ const q=document.querySelector('#qr'); q.innerHTML='';
+ new QRCode(q,{text:p.url,width:220,height:220,correctLevel:QRCode.CorrectLevel.H});
+ document.querySelector('#qrModal').style.display='flex';
+}
+function closeQR(){document.querySelector('#qrModal').style.display='none'}
+function downloadQR(){
+ const img=document.querySelector('#qr img');
+ if(!img)return;
+ const a=document.createElement('a');a.href=img.src;a.download=`AluARTmx-QR-${currentQR.id}.png`;a.click();
+}
+function openAR(p){window.open(p.url,'_blank')}
+function removeProject(id){if(confirm('¿Eliminar este cuadro del panel?')){save(projects().filter(x=>x.id!==id));render()}}
+function render(){
+ const box=document.querySelector('#list'), a=projects();
+ if(!a.length){box.innerHTML='<p class="note">Todavía no hay cuadros.</p>';return}
+ box.innerHTML=a.map(p=>`<div class="item"><div><b>${esc(p.id)} — ${esc(p.name)}</b><small>${esc(p.url)}</small></div><div class="actions"><button onclick='showQR(${JSON.stringify(p)})'>QR</button><button onclick='openAR(${JSON.stringify(p)})'>Abrir</button><button class="danger" onclick="removeProject('${esc(p.id)}')">×</button></div></div>`).join('')
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+render();
 </script>
 </body>
 </html>
