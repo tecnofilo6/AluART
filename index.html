@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AluARTmx AR</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial}
+#ui{position:fixed;inset:0;z-index:10;color:#fff;pointer-events:none}
+.brand{position:absolute;top:18px;left:18px;background:#000b;padding:10px 13px;border-radius:12px;font-weight:bold}
+.hint{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);background:#000b;padding:13px 16px;border-radius:14px;text-align:center;width:min(86%,420px)}
+#sound{display:none;pointer-events:auto;position:absolute;bottom:90px;left:50%;transform:translateX(-50%);padding:13px 20px;border:0;border-radius:999px;font-weight:bold}
+#msg{display:none;position:absolute;left:15px;right:15px;bottom:18px;background:#7f1d1d;padding:14px;border-radius:12px}
+</style>
+</head>
+<body>
+<div id="ui"><div class="brand">AluARTmx</div><div id="hint" class="hint">Apunta al cuadro para verlo cobrar vida.</div><button id="sound">🔊 Activar sonido</button><div id="msg"></div></div>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+<a-scene id="scene" mindar-image="imageTargetSrc: ../assets/targets.mind; maxTrack: 1;" color-space="sRGB"
+ renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+ device-orientation-permission-ui="enabled: false">
+ <a-assets><video id="video" src="" playsinline webkit-playsinline loop crossorigin="anonymous"></video></a-assets>
+ <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+ <a-entity mindar-image-target="targetIndex: 0">
+   <a-video id="arVideo" src="#video" position="0 0 0" width="1" height=".5625"></a-video>
+ </a-entity>
+</a-scene>
+
+<script>
+const params=new URLSearchParams(location.search), id=params.get('id')||'001';
+const projects=JSON.parse(localStorage.getItem('aluartmx_projects_v2')||'[]');
+const p=projects.find(x=>x.id===id);
+const video=document.querySelector('#video'), btn=document.querySelector('#sound'), hint=document.querySelector('#hint'), msg=document.querySelector('#msg');
+
+if(p && p.video){video.src=p.video;video.load()}
+else{msg.style.display='block';msg.textContent='Este cuadro todavía no tiene video configurado en la demo.'}
+
+const target=document.querySelector('a-entity[mindar-image-target]');
+target.addEventListener('targetFound', async ()=>{
+ hint.textContent='¡Cuadro detectado! Reproduciendo…';
+ try{await video.play()}catch(e){btn.style.display='block'}
+});
+target.addEventListener('targetLost',()=>{video.pause();btn.style.display='none';hint.textContent='Apunta al cuadro para verlo cobrar vida.'});
+btn.onclick=async()=>{video.muted=false;try{await video.play();btn.style.display='none'}catch(e){}}
+</script>
+</body>
+</html>
