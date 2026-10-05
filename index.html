@@ -1,98 +1,880 @@
 <!doctype html>
 <html lang="es">
+
 <head>
+
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>AluARTmx AR • Panel</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111;font-family:Arial,sans-serif}
-header{background:#111;color:#fff;padding:22px 18px}header strong{letter-spacing:.08em}
-main{max-width:1050px;margin:24px auto;padding:0 16px}.grid{display:grid;grid-template-columns:360px 1fr;gap:20px}
-.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 20px #0001}
-h1{margin:0 0 6px;font-size:25px}h2{margin-top:0}label{display:block;font-weight:700;margin:15px 0 7px}
-input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:15px}
-button{border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}
-.primary{background:#111;color:#fff;width:100%;margin-top:18px}.danger{background:#fee2e2;color:#991b1b}
-.item{border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:10px 0;display:flex;justify-content:space-between;gap:12px;align-items:center}
-.item small{display:block;color:#6b7280;margin-top:4px}.actions{display:flex;gap:7px;flex-wrap:wrap}
-#qrModal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px}
-.modal{background:#fff;border-radius:18px;padding:24px;text-align:center;max-width:360px;width:100%}
-#qr{display:flex;justify-content:center;margin:15px}
-.note{font-size:13px;color:#6b7280;line-height:1.4}
-@media(max-width:800px){.grid{grid-template-columns:1fr}}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#f3f4f6;
+    color:#111;
+    font-family:Arial,sans-serif;
+}
+
+header{
+    background:#111;
+    color:#fff;
+    padding:22px 18px;
+}
+
+header strong{
+    letter-spacing:.08em;
+}
+
+main{
+    max-width:1050px;
+    margin:24px auto;
+    padding:0 16px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:20px;
+}
+
+.card{
+    background:#fff;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 4px 20px #0001;
+}
+
+h1{
+    margin:0 0 6px;
+    font-size:25px;
+}
+
+h2{
+    margin-top:0;
+}
+
+label{
+    display:block;
+    font-weight:700;
+    margin:15px 0 7px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    font-size:15px;
+}
+
+button{
+    border:0;
+    border-radius:10px;
+    padding:11px 14px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.primary{
+    background:#111;
+    color:#fff;
+    width:100%;
+    margin-top:18px;
+}
+
+.danger{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.item{
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:14px;
+    margin:10px 0;
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+}
+
+.item small{
+    display:block;
+    color:#6b7280;
+    margin-top:4px;
+    word-break:break-all;
+}
+
+.actions{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+}
+
+#qrModal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:#0008;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal{
+    background:#fff;
+    border-radius:18px;
+    padding:24px;
+    text-align:center;
+    max-width:360px;
+    width:100%;
+}
+
+#qr{
+    display:flex;
+    justify-content:center;
+    margin:15px;
+}
+
+.note{
+    font-size:13px;
+    color:#6b7280;
+    line-height:1.4;
+    word-break:break-all;
+}
+
+.exito{
+    color:#008f39;
+    font-weight:bold;
+}
+
+@media(max-width:800px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
 </style>
+
 </head>
+
 <body>
-<header><strong>AluARTmx • REALIDAD AUMENTADA</strong></header>
+
+<header>
+
+<strong>AluARTmx • REALIDAD AUMENTADA</strong>
+
+</header>
+
+
 <main>
+
 <div class="grid">
+
+
+<!-- ============================= -->
+<!-- CREAR CUADRO -->
+<!-- ============================= -->
+
 <section class="card">
+
 <h1>Nuevo cuadro</h1>
-<p class="note">Crea un registro y genera su QR. En esta v2 el panel guarda los datos localmente para poder probar el flujo sin servidor.</p>
+
+<p class="note">
+Crea un registro y genera su QR.
+El QR utilizará exclusivamente el enlace del VIDEO.
+</p>
+
+
 <label>ID del cuadro</label>
-<input id="id" placeholder="001">
+
+<input
+id="id"
+placeholder="001"
+>
+
+
 <label>Nombre / cliente</label>
-<input id="name" placeholder="Familia Pérez">
+
+<input
+id="name"
+placeholder="Familia Pérez"
+>
+
+
 <label>URL de la experiencia AR</label>
-<input id="url" placeholder="https://tu-dominio.com/ar/001">
+
+<input
+id="url"
+placeholder="https://tu-dominio.com/ar/001"
+>
+
+
 <label>Video (URL para la demo)</label>
-<input id="video" placeholder="https://.../video.mp4">
-<button class="primary" onclick="createProject()">Crear cuadro + QR</button>
+
+<input
+id="video"
+placeholder="Pega aquí el enlace de Google Drive"
+>
+
+
+<button
+class="primary"
+onclick="createProject()"
+>
+
+Crear cuadro + QR
+
+</button>
+
 </section>
+
+
+
+<!-- ============================= -->
+<!-- LISTA DE CUADROS -->
+<!-- ============================= -->
+
 <section class="card">
+
 <h2>Mis cuadros</h2>
+
 <div id="list"></div>
+
 </section>
+
+
 </div>
+
 </main>
 
+
+
+<!-- ============================= -->
+<!-- VENTANA DEL QR -->
+<!-- ============================= -->
+
 <div id="qrModal">
+
 <div class="modal">
-<h2 id="qrTitle">QR</h2><div id="qr"></div>
-<p class="note" id="qrUrl"></p>
-<button onclick="downloadQR()">Descargar QR</button>
-<button onclick="closeQR()">Cerrar</button>
-</div></div>
+
+<h2 id="qrTitle">
+QR
+</h2>
+
+<p class="exito">
+QR GENERADO CORRECTAMENTE
+</p>
+
+<div id="qr"></div>
+
+<p class="note">
+<strong>El QR contiene exclusivamente:</strong>
+</p>
+
+<p
+class="note"
+id="qrUrl"
+></p>
+
+
+<button
+onclick="downloadQR()"
+>
+
+Descargar QR
+
+</button>
+
+
+<button
+onclick="openVideo()"
+>
+
+Abrir video
+
+</button>
+
+
+<button
+onclick="closeQR()"
+>
+
+Cerrar
+
+</button>
+
+</div>
+
+</div>
+
+
 
 <script>
-const KEY='aluartmx_projects_v2';
-let currentQR=null;
-function projects(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
-function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
+
+
+/* =========================================
+   CONFIGURACIÓN
+========================================= */
+
+const KEY = 'aluartmx_projects_v3';
+
+let currentQR = null;
+
+
+/* =========================================
+   OBTENER CUADROS GUARDADOS
+========================================= */
+
+function projects(){
+
+    return JSON.parse(
+        localStorage.getItem(KEY) || '[]'
+    );
+
+}
+
+
+/* =========================================
+   GUARDAR CUADROS
+========================================= */
+
+function save(a){
+
+    localStorage.setItem(
+        KEY,
+        JSON.stringify(a)
+    );
+
+}
+
+
+/* =========================================
+   CONVERTIR LINK DE GOOGLE DRIVE
+========================================= */
+
+function convertirDrive(url){
+
+    url = url.trim();
+
+    /*
+    Detecta enlaces como:
+
+    https://drive.google.com/file/d/ID/view
+    */
+
+    let encontrado = url.match(
+        /drive\.google\.com\/file\/d\/([^\/]+)/
+    );
+
+    if(encontrado){
+
+        let idVideo = encontrado[1];
+
+        return 'https://drive.google.com/file/d/'
+        + idVideo
+        + '/preview';
+
+    }
+
+    /*
+    Si no es Drive,
+    dejamos el enlace como está.
+    */
+
+    return url;
+
+}
+
+
+/* =========================================
+   CREAR CUADRO
+========================================= */
+
 function createProject(){
- const id=document.querySelector('#id').value.trim();
- const name=document.querySelector('#name').value.trim();
- const url=document.querySelector('#url').value.trim();
- const video=document.querySelector('#video').value.trim();
- if(!id||!url){alert('Escribe al menos el ID y la URL de la experiencia.');return}
- let a=projects(); a=a.filter(x=>x.id!==id);
- a.unshift({id,name:name||'Sin nombre',url,video,created:new Date().toISOString()}); save(a);
- showQR(a[0]); render();
+
+    const id =
+        document.querySelector('#id')
+        .value
+        .trim();
+
+
+    const name =
+        document.querySelector('#name')
+        .value
+        .trim();
+
+
+    const url =
+        document.querySelector('#url')
+        .value
+        .trim();
+
+
+    const videoOriginal =
+        document.querySelector('#video')
+        .value
+        .trim();
+
+
+    /* ===============================
+       VALIDACIONES
+    =============================== */
+
+    if(!id){
+
+        alert(
+            'Escribe el ID del cuadro.'
+        );
+
+        return;
+
+    }
+
+
+    if(!url){
+
+        alert(
+            'Escribe la URL de la experiencia AR.'
+        );
+
+        return;
+
+    }
+
+
+    if(!videoOriginal){
+
+        alert(
+            'Pega el enlace del VIDEO.'
+        );
+
+        return;
+
+    }
+
+
+    /* ===============================
+       CONVERTIR VIDEO
+    =============================== */
+
+    const video =
+        convertirDrive(videoOriginal);
+
+
+    /* ===============================
+       GUARDAR
+    =============================== */
+
+    let a = projects();
+
+
+    /*
+    Si ya existe el mismo ID,
+    lo reemplazamos.
+    */
+
+    a = a.filter(
+        x => x.id !== id
+    );
+
+
+    a.unshift({
+
+        id:id,
+
+        name:
+            name || 'Sin nombre',
+
+        url:url,
+
+        video:video,
+
+        created:
+            new Date().toISOString()
+
+    });
+
+
+    save(a);
+
+
+    /* ===============================
+       GENERAR QR
+    =============================== */
+
+    showQR(a[0]);
+
+
+    /* ===============================
+       ACTUALIZAR LISTA
+    =============================== */
+
+    render();
+
 }
+
+
+/* =========================================
+   MOSTRAR QR
+========================================= */
+
 function showQR(p){
- currentQR=p;
- document.querySelector('#qrTitle').textContent=`AluARTmx • ${p.id}`;
- document.querySelector('#qrUrl').textContent=p.url;
- const q=document.querySelector('#qr'); q.innerHTML='';
- new QRCode(q,{text:p.url,width:220,height:220,correctLevel:QRCode.CorrectLevel.H});
- document.querySelector('#qrModal').style.display='flex';
+
+    currentQR = p;
+
+
+    document.querySelector(
+        '#qrTitle'
+    ).textContent =
+        `AluARTmx • ${p.id}`;
+
+
+    /*
+    ========================================
+    IMPORTANTE
+    ========================================
+
+    EL QR USA SOLAMENTE p.video
+
+    NO usa p.url
+    NO usa la URL de experiencia AR
+    */
+
+    const destino = p.video;
+
+
+    if(!destino){
+
+        alert(
+            'Este cuadro no tiene un video guardado.'
+        );
+
+        return;
+
+    }
+
+
+    /*
+    Mostrar exactamente
+    qué contiene el QR
+    */
+
+    document.querySelector(
+        '#qrUrl'
+    ).textContent =
+        destino;
+
+
+    /*
+    Limpiar QR anterior
+    */
+
+    const q =
+        document.querySelector('#qr');
+
+    q.innerHTML = '';
+
+
+    /*
+    CREAR QR
+
+    IMPORTANTE:
+    text: destino
+
+    */
+
+    new QRCode(
+
+        q,
+
+        {
+
+            text:destino,
+
+            width:220,
+
+            height:220,
+
+            correctLevel:
+                QRCode.CorrectLevel.H
+
+        }
+
+    );
+
+
+    /*
+    Mostrar ventana
+    */
+
+    document.querySelector(
+        '#qrModal'
+    ).style.display =
+        'flex';
+
 }
-function closeQR(){document.querySelector('#qrModal').style.display='none'}
+
+
+/* =========================================
+   ABRIR VIDEO
+========================================= */
+
+function openVideo(){
+
+    if(
+        !currentQR ||
+        !currentQR.video
+    ){
+
+        alert(
+            'No hay video disponible.'
+        );
+
+        return;
+
+    }
+
+
+    window.open(
+        currentQR.video,
+        '_blank'
+    );
+
+}
+
+
+/* =========================================
+   CERRAR QR
+========================================= */
+
+function closeQR(){
+
+    document.querySelector(
+        '#qrModal'
+    ).style.display =
+        'none';
+
+}
+
+
+/* =========================================
+   DESCARGAR QR
+========================================= */
+
 function downloadQR(){
- const img=document.querySelector('#qr img');
- if(!img)return;
- const a=document.createElement('a');a.href=img.src;a.download=`AluARTmx-QR-${currentQR.id}.png`;a.click();
+
+    const img =
+        document.querySelector(
+            '#qr img'
+        );
+
+
+    if(!img){
+
+        alert(
+            'No se encontró el QR.'
+        );
+
+        return;
+
+    }
+
+
+    const a =
+        document.createElement('a');
+
+
+    a.href =
+        img.src;
+
+
+    a.download =
+        `AluARTmx-QR-${currentQR.id}.png`;
+
+
+    a.click();
+
 }
-function openAR(p){window.open(p.url,'_blank')}
-function removeProject(id){if(confirm('¿Eliminar este cuadro del panel?')){save(projects().filter(x=>x.id!==id));render()}}
+
+
+/* =========================================
+   ABRIR EXPERIENCIA AR
+========================================= */
+
+function openAR(p){
+
+    window.open(
+        p.url,
+        '_blank'
+    );
+
+}
+
+
+/* =========================================
+   ELIMINAR CUADRO
+========================================= */
+
+function removeProject(id){
+
+    if(
+        confirm(
+            '¿Eliminar este cuadro del panel?'
+        )
+    ){
+
+        save(
+            projects().filter(
+                x => x.id !== id
+            )
+        );
+
+        render();
+
+    }
+
+}
+
+
+/* =========================================
+   ESCAPAR TEXTO
+========================================= */
+
+function esc(s){
+
+    return String(s || '')
+        .replace(
+            /[&<>"']/g,
+
+            function(m){
+
+                return {
+
+                    '&':'&amp;',
+                    '<':'&lt;',
+                    '>':'&gt;',
+                    '"':'&quot;',
+                    "'":'&#39;'
+
+                }[m];
+
+            }
+
+        );
+
+}
+
+
+/* =========================================
+   MOSTRAR LISTA
+========================================= */
+
 function render(){
- const box=document.querySelector('#list'), a=projects();
- if(!a.length){box.innerHTML='<p class="note">Todavía no hay cuadros.</p>';return}
- box.innerHTML=a.map(p=>`<div class="item"><div><b>${esc(p.id)} — ${esc(p.name)}</b><small>${esc(p.url)}</small></div><div class="actions"><button onclick='showQR(${JSON.stringify(p)})'>QR</button><button onclick='openAR(${JSON.stringify(p)})'>Abrir</button><button class="danger" onclick="removeProject('${esc(p.id)}')">×</button></div></div>`).join('')
+
+    const box =
+        document.querySelector('#list');
+
+
+    const a =
+        projects();
+
+
+    if(!a.length){
+
+        box.innerHTML =
+            '<p class="note">Todavía no hay cuadros.</p>';
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        a.map(
+
+            p => `
+
+            <div class="item">
+
+                <div>
+
+                    <b>
+                    ${esc(p.id)}
+                    —
+                    ${esc(p.name)}
+                    </b>
+
+                    <small>
+                    Video:
+                    ${esc(p.video)}
+                    </small>
+
+                </div>
+
+
+                <div class="actions">
+
+                    <button
+                    onclick='showQR(${JSON.stringify(p)})'
+                    >
+                    QR
+                    </button>
+
+
+                    <button
+                    onclick='openVideo(${JSON.stringify(p)})'
+                    >
+                    Video
+                    </button>
+
+
+                    <button
+                    onclick='openAR(${JSON.stringify(p)})'
+                    >
+                    AR
+                    </button>
+
+
+                    <button
+                    class="danger"
+                    onclick="removeProject('${esc(p.id)}')"
+                    >
+                    ×
+                    </button>
+
+                </div>
+
+            </div>
+
+            `
+
+        )
+        .join('');
+
 }
-function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+
+/* =========================================
+   INICIAR PANEL
+========================================= */
+
 render();
+
+
 </script>
+
 </body>
+
 </html>
