@@ -1,408 +1,246 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AluARTmx AR</title>
-
-<style>
-
-body {
-    background: #111;
-    color: white;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-}
-
-.contenedor {
-    max-width: 650px;
-    margin: auto;
-}
-
-h1 {
-    text-align: center;
-}
-
-.panel {
-    background: #222;
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-}
-
-label {
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 6px;
-    font-weight: bold;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    border: 0;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 15px;
-}
-
-button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 15px;
-    border: 0;
-    border-radius: 8px;
-    background: #008cff;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #006dcc;
-}
-
-#qr {
-    background: white;
-    padding: 15px;
-    width: fit-content;
-    margin: 25px auto;
-    border-radius: 8px;
-}
-
-.resultado {
-    background: #063b20;
-    border: 1px solid #00d878;
-    padding: 15px;
-    border-radius: 8px;
-    word-break: break-all;
-    margin-top: 15px;
-}
-
-.negro {
-    background: #111;
-    padding: 12px;
-    border-radius: 8px;
-    word-break: break-all;
-    font-size: 12px;
-    color: #aaa;
-}
-
-</style>
+<title>AluARTmx - Crear QR</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-</head>
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#111;
+    color:white;
+    margin:0;
+    padding:20px;
+}
 
+.contenedor{
+    max-width:600px;
+    margin:auto;
+    background:#222;
+    padding:25px;
+    border-radius:15px;
+}
+
+h1{
+    text-align:center;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    margin-bottom:5px;
+}
+
+input{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #555;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:20px;
+    border:0;
+    border-radius:8px;
+    background:#00c853;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#resultado{
+    display:none;
+    text-align:center;
+    margin-top:30px;
+}
+
+#qr{
+    background:white;
+    padding:15px;
+    display:inline-block;
+    margin-top:15px;
+}
+
+.info{
+    background:#333;
+    padding:12px;
+    margin-top:15px;
+    border-radius:8px;
+    word-break:break-all;
+}
+
+.exito{
+    color:#00e676;
+    font-weight:bold;
+}
+</style>
+</head>
 
 <body>
 
-
 <div class="contenedor">
 
+<h1>AluARTmx</h1>
 
-<h1>AluARTmx AR</h1>
+<h2>Crear cuadro + QR</h2>
 
+<label>ID del cuadro</label>
+<input id="campoID" type="text" placeholder="Ejemplo: 001">
 
-<div class="panel">
+<label>Nombre del cliente</label>
+<input id="campoCliente" type="text" placeholder="Nombre del cliente">
 
+<label>URL de la experiencia AR</label>
+<input id="campoExperiencia" type="text"
+placeholder="Puedes poner cualquier cosa aquí">
 
-<h2>Crear cuadro</h2>
+<label>VIDEO</label>
+<input id="campoVideo" type="text"
+placeholder="Pega aquí el enlace de Google Drive">
 
-
-<label>
-ID del cuadro
-</label>
-
-<input
-    id="id"
-    type="text"
-    placeholder="001"
->
-
-
-<label>
-Nombre del cliente
-</label>
-
-<input
-    id="cliente"
-    type="text"
-    placeholder="Prueba"
->
-
-
-<label>
-URL de la experiencia AR
-</label>
-
-<input
-    id="experiencia"
-    type="url"
-    placeholder="https://tecnofilo6.github.io/AluART/"
->
-
-
-<label>
-Video (URL para la demo)
-</label>
-
-<input
-    id="video"
-    type="url"
-    placeholder="Pega aquí el enlace de Google Drive"
->
-
-
-<button
-    onclick="crearQR()"
->
+<button onclick="generarQR()">
 CREAR QR
 </button>
 
+<div id="resultado">
 
-</div>
+<p class="exito">
+QR CREADO CORRECTAMENTE
+</p>
 
+<p>
+<strong>El QR contiene ÚNICAMENTE:</strong>
+</p>
 
-
-<div
-    class="panel"
-    id="resultado"
-    style="display:none;"
->
-
-
-<h2>QR generado</h2>
-
-
-<div>
-
-<strong>
-El QR contiene EXCLUSIVAMENTE:
-</strong>
-
-</div>
-
-
-<div
-    id="urlQR"
-    class="resultado"
-></div>
-
+<div class="info" id="direccionQR"></div>
 
 <div id="qr"></div>
 
-
-<button
-    onclick="abrirVideo()"
->
+<button onclick="abrirVideo()">
 ABRIR VIDEO
 </button>
 
-
 </div>
 
-
 </div>
-
-
 
 <script>
 
+let videoParaAbrir = "";
 
-let videoFinal = "";
+function convertirDrive(enlace){
 
+    enlace = enlace.trim();
 
+    let resultado = enlace.match(
+        /drive\.google\.com\/file\/d\/([^\/]+)/
+    );
 
-function convertirDrive(url) {
+    if(resultado){
 
-    url = url.trim();
+        let idVideo = resultado[1];
 
-
-    const encontrado =
-        url.match(
-            /drive\.google\.com\/file\/d\/([^\/]+)/
-        );
-
-
-    if (encontrado) {
-
-        const id =
-            encontrado[1];
-
-
-        return (
-            "https://drive.google.com/file/d/"
-            + id
-            + "/preview"
-        );
+        return "https://drive.google.com/file/d/"
+        + idVideo
+        + "/preview";
 
     }
 
-
-    return url;
-
+    return enlace;
 }
 
 
+function generarQR(){
 
-function crearQR() {
+    /*
+    IMPORTANTE:
+    ESTOS SON LOS ÚNICOS DATOS QUE SE USAN
+    PARA CREAR EL QR.
+    */
 
-
-    const id =
-        document
-        .getElementById("id")
+    let video = document
+        .getElementById("campoVideo")
         .value
         .trim();
 
+    if(video === ""){
 
-    const cliente =
-        document
-        .getElementById("cliente")
-        .value
-        .trim();
-
-
-    const experiencia =
-        document
-        .getElementById("experiencia")
-        .value
-        .trim();
-
-
-    const video =
-        document
-        .getElementById("video")
-        .value
-        .trim();
-
-
-    if (!id) {
-
-        alert(
-            "Escribe el ID del cuadro."
-        );
+        alert("Pega primero el enlace del VIDEO.");
 
         return;
-
     }
 
+    /*
+    Convertimos Google Drive
+    */
 
-    if (!cliente) {
-
-        alert(
-            "Escribe el nombre del cliente."
-        );
-
-        return;
-
-    }
-
-
-    if (!experiencia) {
-
-        alert(
-            "Escribe la URL de la experiencia AR."
-        );
-
-        return;
-
-    }
-
-
-    if (!video) {
-
-        alert(
-            "Escribe la URL del video."
-        );
-
-        return;
-
-    }
+    videoParaAbrir = convertirDrive(video);
 
 
     /*
-    ============================================
-    AQUÍ ESTÁ LA CLAVE
-
-    EXPERIENCIA AR NO SE UTILIZA.
-
-    SOLAMENTE UTILIZAMOS VIDEO.
-    ============================================
+    MOSTRAMOS EXACTAMENTE
+    LO QUE VA DENTRO DEL QR
     */
 
-
-    videoFinal =
-        convertirDrive(video);
-
-
-    document.getElementById(
-        "urlQR"
-    ).textContent =
-        videoFinal;
+    document.getElementById("direccionQR").textContent =
+        videoParaAbrir;
 
 
-    document.getElementById(
-        "qr"
-    ).innerHTML = "";
+    /*
+    Limpiamos QR anterior
+    */
 
+    document.getElementById("qr").innerHTML = "";
+
+
+    /*
+    CREAR QR
+    */
 
     new QRCode(
-
         document.getElementById("qr"),
-
         {
-
-            text: videoFinal,
-
-            width: 260,
-
-            height: 260,
-
-            correctLevel:
-                QRCode.CorrectLevel.H
-
+            text: videoParaAbrir,
+            width:260,
+            height:260,
+            correctLevel:QRCode.CorrectLevel.H
         }
-
     );
 
 
-    document.getElementById(
-        "resultado"
-    ).style.display =
+    /*
+    Mostrar resultado
+    */
+
+    document.getElementById("resultado").style.display =
         "block";
 
 }
 
 
+function abrirVideo(){
 
-function abrirVideo() {
+    if(videoParaAbrir === ""){
 
-    if (!videoFinal) {
-
-        alert(
-            "Primero crea el QR."
-        );
+        alert("Primero crea el QR.");
 
         return;
-
     }
 
-
-    window.open(
-        videoFinal,
-        "_blank"
-    );
+    window.open(videoParaAbrir,"_blank");
 
 }
 
-
 </script>
-
 
 </body>
 </html>
