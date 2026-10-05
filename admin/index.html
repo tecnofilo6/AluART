@@ -507,10 +507,8 @@ function mostrarQR(idCodificado) {
     const id =
         decodeURIComponent(idCodificado);
 
-
     const cuadro =
         cuadros.find(c => c.id === id);
-
 
     if (!cuadro) {
 
@@ -519,15 +517,10 @@ function mostrarQR(idCodificado) {
         return;
     }
 
-
     const url =
-        BASE_URL +
-        "?id=" +
-        encodeURIComponent(cuadro.id);
-
+        convertirGoogleDrive(cuadro.videoUrl);
 
     document.getElementById("qrcode").innerHTML = "";
-
 
     new QRCode(
         document.getElementById("qrcode"),
@@ -538,12 +531,11 @@ function mostrarQR(idCodificado) {
         }
     );
 
-
     qrActual = cuadro;
-
 
     document.getElementById("qrModal").style.display =
         "flex";
+}
 
 }
 
