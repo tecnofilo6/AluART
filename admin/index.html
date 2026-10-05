@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AluARTmx AR</title>
 
 <style>
+
+* {
+    box-sizing: border-box;
+}
+
 body {
+    margin: 0;
+    padding: 20px;
     font-family: Arial, sans-serif;
     background: #111;
     color: white;
-    margin: 0;
-    padding: 20px;
 }
 
 .container {
@@ -21,49 +29,70 @@ body {
 
 h1 {
     text-align: center;
+    margin-bottom: 30px;
 }
 
 .card {
     background: #222;
     padding: 20px;
     border-radius: 12px;
-    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 0;
 }
 
 label {
     display: block;
     margin-top: 15px;
-    margin-bottom: 5px;
+    margin-bottom: 7px;
+    font-weight: bold;
 }
 
 input {
     width: 100%;
-    box-sizing: border-box;
     padding: 12px;
-    border-radius: 8px;
     border: none;
-    margin-bottom: 5px;
+    border-radius: 8px;
+    font-size: 15px;
 }
 
 button {
     width: 100%;
-    padding: 14px;
+    padding: 13px;
     margin-top: 15px;
     border: none;
     border-radius: 8px;
-    background: #00aaff;
+    background: #008cff;
     color: white;
     font-size: 16px;
     cursor: pointer;
 }
 
 button:hover {
-    background: #0088cc;
+    background: #006dcc;
+}
+
+.boton-verde {
+    background: #00a65a;
+}
+
+.boton-verde:hover {
+    background: #008f4c;
+}
+
+.boton-rojo {
+    background: #d63031;
+}
+
+.boton-rojo:hover {
+    background: #b71c1c;
 }
 
 .cuadro {
     background: #333;
-    padding: 15px;
+    padding: 18px;
     border-radius: 10px;
     margin-top: 15px;
 }
@@ -71,15 +100,25 @@ button:hover {
 .qr {
     background: white;
     padding: 15px;
-    display: inline-block;
-    margin-top: 15px;
+    width: fit-content;
+    margin: 20px auto;
+    border-radius: 8px;
 }
 
 .url {
+    background: #181818;
+    padding: 10px;
+    border-radius: 6px;
     word-break: break-all;
     font-size: 12px;
     color: #aaa;
-    margin-top: 10px;
+    margin-top: 8px;
+}
+
+.info {
+    color: #aaa;
+    font-size: 13px;
+    margin-top: 8px;
 }
 
 hr {
@@ -87,8 +126,10 @@ hr {
     border-top: 1px solid #444;
     margin: 25px 0;
 }
+
 </style>
 
+<!-- Librería para generar QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 </head>
@@ -99,21 +140,69 @@ hr {
 
 <h1>AluARTmx AR</h1>
 
+
+<!-- ============================= -->
+<!-- NUEVO CUADRO -->
+<!-- ============================= -->
+
 <div class="card">
 
 <h2>Nuevo cuadro</h2>
 
-<label>ID del cuadro</label>
-<input id="idCuadro" placeholder="Ejemplo: 001">
 
-<label>Nombre del cliente</label>
-<input id="cliente" placeholder="Ejemplo: Juan Pérez">
+<label for="idCuadro">
+ID del cuadro
+</label>
 
-<label>URL de la experiencia AR</label>
-<input id="arUrl" placeholder="Opcional">
+<input
+    id="idCuadro"
+    type="text"
+    placeholder="Ejemplo: 001"
+>
 
-<label>Video (URL para la demo)</label>
-<input id="videoUrl" placeholder="Pega aquí el enlace de Google Drive">
+
+<label for="cliente">
+Nombre del cliente
+</label>
+
+<input
+    id="cliente"
+    type="text"
+    placeholder="Ejemplo: Juan Pérez"
+>
+
+
+<label for="arUrl">
+URL de la experiencia AR
+</label>
+
+<input
+    id="arUrl"
+    type="url"
+    placeholder="https://tecnofilo6.github.io/AluART/"
+>
+
+
+<div class="info">
+Este campo es obligatorio.
+</div>
+
+
+<label for="videoUrl">
+Video (URL para la demo)
+</label>
+
+<input
+    id="videoUrl"
+    type="url"
+    placeholder="Pega aquí el enlace de Google Drive"
+>
+
+
+<div class="info">
+El QR utilizará esta dirección para abrir el video.
+</div>
+
 
 <button onclick="guardarCuadro()">
 Guardar cuadro
@@ -121,35 +210,58 @@ Guardar cuadro
 
 </div>
 
+
+<!-- ============================= -->
+<!-- MIS CUADROS -->
+<!-- ============================= -->
+
 <div class="card">
 
 <h2>Mis cuadros</h2>
 
-<div id="lista"></div>
+<div id="lista">
+
+<p>
+No hay cuadros registrados.
+</p>
 
 </div>
 
 </div>
+
+</div>
+
 
 <script>
 
-let cuadros = JSON.parse(localStorage.getItem("aluart_cuadros")) || [];
+
+/* =========================================
+   CARGAR CUADROS GUARDADOS
+========================================= */
+
+let cuadros = JSON.parse(
+    localStorage.getItem("aluart_cuadros")
+) || [];
 
 
-/* ================================
-   CONVERTIR GOOGLE DRIVE
-================================ */
+/* =========================================
+   CONVERTIR URL DE GOOGLE DRIVE
+========================================= */
 
 function convertirGoogleDrive(url) {
 
-    if (!url) return "";
+    if (!url) {
+        return "";
+    }
 
     url = url.trim();
 
+
     /*
-    Detecta enlaces como:
+    Detectamos enlaces como:
 
     https://drive.google.com/file/d/ID/view
+
     https://drive.google.com/file/d/ID/view?usp=sharing
     */
 
@@ -157,62 +269,124 @@ function convertirGoogleDrive(url) {
         /drive\.google\.com\/file\/d\/([^\/]+)/
     );
 
+
     if (match) {
 
         const id = match[1];
 
-        return "https://drive.google.com/file/d/" 
-             + id 
-             + "/preview";
+
+        return (
+            "https://drive.google.com/file/d/"
+            + id
+            + "/preview"
+        );
+
     }
+
 
     /*
     Si no es Google Drive,
-    deja la URL tal como está.
+    utilizamos la URL original.
     */
 
     return url;
+
 }
 
 
-/* ================================
+/* =========================================
    GUARDAR CUADRO
-================================ */
+========================================= */
 
 function guardarCuadro() {
 
-    const id = document.getElementById("idCuadro").value.trim();
-    const cliente = document.getElementById("cliente").value.trim();
 
-    /*
-    IMPORTANTE:
-    EL VIDEO SE TOMA DE videoUrl
-    */
+    const id =
+        document.getElementById("idCuadro")
+        .value
+        .trim();
 
-    const videoOriginal =
-        document.getElementById("videoUrl").value.trim();
+
+    const cliente =
+        document.getElementById("cliente")
+        .value
+        .trim();
+
 
     const arUrl =
-        document.getElementById("arUrl").value.trim();
+        document.getElementById("arUrl")
+        .value
+        .trim();
+
+
+    const videoOriginal =
+        document.getElementById("videoUrl")
+        .value
+        .trim();
+
+
+    /* ==============================
+       VALIDACIONES
+    ============================== */
 
 
     if (!id) {
-        alert("Escribe el ID del cuadro");
+
+        alert(
+            "Escribe el ID del cuadro."
+        );
+
         return;
+
     }
+
+
+    if (!cliente) {
+
+        alert(
+            "Escribe el nombre del cliente."
+        );
+
+        return;
+
+    }
+
+
+    if (!arUrl) {
+
+        alert(
+            "La URL de la experiencia AR es obligatoria."
+        );
+
+        return;
+
+    }
+
 
     if (!videoOriginal) {
-        alert("Escribe la URL del video");
+
+        alert(
+            "Escribe la URL del video."
+        );
+
         return;
+
     }
 
 
-    /*
-    Convertimos el video de Google Drive
-    */
+    /* ==============================
+       CONVERTIR VIDEO
+    ============================== */
 
-    const video = convertirGoogleDrive(videoOriginal);
+    const video =
+        convertirGoogleDrive(
+            videoOriginal
+        );
 
+
+    /* ==============================
+       CREAR CUADRO
+    ============================== */
 
     const cuadro = {
 
@@ -227,7 +401,12 @@ function guardarCuadro() {
     };
 
 
+    /* ==============================
+       GUARDAR
+    ============================== */
+
     cuadros.push(cuadro);
+
 
     localStorage.setItem(
         "aluart_cuadros",
@@ -235,25 +414,56 @@ function guardarCuadro() {
     );
 
 
-    document.getElementById("idCuadro").value = "";
-    document.getElementById("cliente").value = "";
-    document.getElementById("arUrl").value = "";
-    document.getElementById("videoUrl").value = "";
+    /* ==============================
+       LIMPIAR FORMULARIO
+    ============================== */
 
+    document.getElementById(
+        "idCuadro"
+    ).value = "";
+
+
+    document.getElementById(
+        "cliente"
+    ).value = "";
+
+
+    document.getElementById(
+        "arUrl"
+    ).value = "";
+
+
+    document.getElementById(
+        "videoUrl"
+    ).value = "";
+
+
+    /* ==============================
+       ACTUALIZAR LISTA
+    ============================== */
 
     mostrarCuadros();
 
-    alert("Cuadro guardado correctamente");
+
+    alert(
+        "Cuadro guardado correctamente."
+    );
+
 }
 
 
-/* ================================
+/* =========================================
    MOSTRAR CUADROS
-================================ */
+========================================= */
 
 function mostrarCuadros() {
 
-    const lista = document.getElementById("lista");
+
+    const lista =
+        document.getElementById(
+            "lista"
+        );
+
 
     lista.innerHTML = "";
 
@@ -264,108 +474,158 @@ function mostrarCuadros() {
             "<p>No hay cuadros registrados.</p>";
 
         return;
+
     }
 
 
-    cuadros.forEach((cuadro, indice) => {
-
-        const div = document.createElement("div");
-
-        div.className = "cuadro";
+    cuadros.forEach(
+        function(cuadro, indice) {
 
 
-        div.innerHTML = `
-
-            <strong>ID:</strong> ${cuadro.id}<br>
-
-            <strong>Cliente:</strong>
-            ${cuadro.cliente || "Sin nombre"}
-
-            <br><br>
-
-            <strong>Video:</strong>
-
-            <div class="url">
-                ${cuadro.video}
-            </div>
-
-            <div id="qr-${indice}" class="qr"></div>
-
-            <button onclick="abrirVideo(${indice})">
-                Abrir video
-            </button>
-
-            <button onclick="descargarQR(${indice})">
-                Descargar QR
-            </button>
-
-            <button onclick="eliminarCuadro(${indice})">
-                Eliminar
-            </button>
-
-        `;
+            const div =
+                document.createElement(
+                    "div"
+                );
 
 
-        lista.appendChild(div);
+            div.className =
+                "cuadro";
 
 
-        crearQR(indice);
+            div.innerHTML = `
 
-    });
+                <strong>ID:</strong>
+                ${cuadro.id}
+
+                <br><br>
+
+                <strong>Cliente:</strong>
+                ${cuadro.cliente}
+
+                <br><br>
+
+                <strong>URL experiencia AR:</strong>
+
+                <div class="url">
+                    ${cuadro.arUrl}
+                </div>
+
+                <br>
+
+                <strong>URL que utilizará el QR:</strong>
+
+                <div class="url">
+                    ${cuadro.video}
+                </div>
+
+                <div
+                    id="qr-${indice}"
+                    class="qr"
+                ></div>
+
+                <button
+                    class="boton-verde"
+                    onclick="abrirVideo(${indice})"
+                >
+                    Abrir video
+                </button>
+
+                <button
+                    onclick="descargarQR(${indice})"
+                >
+                    Descargar QR
+                </button>
+
+                <button
+                    class="boton-rojo"
+                    onclick="eliminarCuadro(${indice})"
+                >
+                    Eliminar
+                </button>
+
+            `;
+
+
+            lista.appendChild(div);
+
+
+            crearQR(indice);
+
+        }
+    );
 
 }
 
 
-/* ================================
+/* =========================================
    CREAR QR
-================================ */
+========================================= */
 
 function crearQR(indice) {
 
-    const cuadro = cuadros[indice];
+
+    const cuadro =
+        cuadros[indice];
+
 
     const contenedor =
-        document.getElementById("qr-" + indice);
+        document.getElementById(
+            "qr-" + indice
+        );
 
 
     contenedor.innerHTML = "";
 
 
     /*
-    MUY IMPORTANTE:
+    ========================================
+    IMPORTANTE
+    ========================================
 
-    EL QR USA DIRECTAMENTE
-    LA URL GUARDADA EN "video"
+    EL QR USA EL VIDEO.
 
-    NO usa arUrl.
-    NO usa ?id=001.
+    NO USA arUrl.
+
+    ========================================
     */
 
-    const url = cuadro.video;
+
+    const urlQR =
+        cuadro.video;
 
 
-    new QRCode(contenedor, {
+    new QRCode(
 
-        text: url,
+        contenedor,
 
-        width: 260,
+        {
 
-        height: 260,
+            text: urlQR,
 
-        correctLevel: QRCode.CorrectLevel.H
+            width: 260,
 
-    });
+            height: 260,
+
+            correctLevel:
+                QRCode.CorrectLevel.H
+
+        }
+
+    );
 
 }
 
 
-/* ================================
+/* =========================================
    ABRIR VIDEO
-================================ */
+========================================= */
 
 function abrirVideo(indice) {
 
-    const cuadro = cuadros[indice];
+
+    const cuadro =
+        cuadros[indice];
+
 
     window.open(
         cuadro.video,
@@ -375,31 +635,45 @@ function abrirVideo(indice) {
 }
 
 
-/* ================================
+/* =========================================
    DESCARGAR QR
-================================ */
+========================================= */
 
 function descargarQR(indice) {
 
+
     const contenedor =
-        document.getElementById("qr-" + indice);
+        document.getElementById(
+            "qr-" + indice
+        );
+
 
     const imagen =
-        contenedor.querySelector("img");
+        contenedor.querySelector(
+            "img"
+        );
 
 
     if (!imagen) {
 
-        alert("No se encontró el QR");
+        alert(
+            "No se encontró el código QR."
+        );
 
         return;
+
     }
 
 
     const enlace =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
-    enlace.href = imagen.src;
+
+    enlace.href =
+        imagen.src;
+
 
     enlace.download =
         "AluARTmx-" +
@@ -412,23 +686,28 @@ function descargarQR(indice) {
 }
 
 
-/* ================================
-   ELIMINAR
-================================ */
+/* =========================================
+   ELIMINAR CUADRO
+========================================= */
 
 function eliminarCuadro(indice) {
 
-    if (
-        !confirm(
-            "¿Eliminar este cuadro?"
-        )
-    ) {
 
+    const confirmar =
+        confirm(
+            "¿Seguro que quieres eliminar este cuadro?"
+        );
+
+
+    if (!confirmar) {
         return;
     }
 
 
-    cuadros.splice(indice, 1);
+    cuadros.splice(
+        indice,
+        1
+    );
 
 
     localStorage.setItem(
@@ -442,9 +721,9 @@ function eliminarCuadro(indice) {
 }
 
 
-/* ================================
-   INICIAR
-================================ */
+/* =========================================
+   INICIAR SISTEMA
+========================================= */
 
 mostrarCuadros();
 
