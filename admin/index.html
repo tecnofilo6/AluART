@@ -635,27 +635,41 @@ function eliminarCuadro(idCodificado) {
 
 function cargarExperiencia() {
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+    const params = new URLSearchParams(
+        window.location.search
+    );
 
-
-    const id =
-        params.get("id");
-
+    const id = params.get("id");
 
     if (!id) {
-
         mostrarCuadros();
+        return;
+    }
+
+    const cuadro = cuadros.find(c => c.id === id);
+
+    document.getElementById("admin").style.display = "none";
+    document.getElementById("experience").style.display = "block";
+
+    if (!cuadro) {
+
+        document.getElementById("expTitulo").innerText =
+            "Cuadro no encontrado";
+
+        document.getElementById("expCliente").innerText =
+            "ID: " + id;
+
+        document.getElementById("videoContainer").innerHTML = `
+            <p style="color:#aaa">
+                Este cuadro todavía no está registrado en este dispositivo.
+            </p>
+        `;
 
         return;
     }
 
-
-    const cuadro =
-        cuadros.find(c => c.id === id);
-
+    mostrarExperiencia(cuadro);
+}
 
     /*
        IMPORTANTE:
