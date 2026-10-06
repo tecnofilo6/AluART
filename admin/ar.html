@@ -109,7 +109,8 @@
         position="0 0 0"
         width="1"
         height="0.5625"
-        rotation="0 0 0">
+        rotation="0 0 0"
+        autoplay>
       </a-video>
 
     </a-entity>
@@ -133,16 +134,9 @@
 
       boton.innerHTML = "🔊 SONIDO ACTIVADO";
 
-      /*
-        Si el video está detenido porque
-        el cuadro ya fue detectado, continúa.
-      */
-
-      if (video.paused && !video.ended) {
-        video.play().catch(function(error) {
-          console.log("No se pudo reproducir:", error);
-        });
-      }
+      video.play().catch(function(error) {
+        console.log("Error al reproducir:", error);
+      });
 
     });
 
@@ -153,16 +147,16 @@
 
     target.addEventListener("targetFound", function () {
 
-      console.log("Cuadro detectado");
+      console.log("AluARTmx: cuadro detectado");
 
       /*
-        Si el video ya terminó, no lo vuelve a iniciar.
+        Si el video ya terminó, no lo reiniciamos.
       */
 
       if (!video.ended) {
 
         video.play().catch(function(error) {
-          console.log("No se pudo reproducir:", error);
+          console.log("Error al iniciar video:", error);
         });
 
       }
@@ -171,12 +165,12 @@
 
 
     /*
-      CUANDO SE DEJA DE VER EL CUADRO
+      CUANDO SE PIERDE EL CUADRO
     */
 
     target.addEventListener("targetLost", function () {
 
-      console.log("Cuadro perdido");
+      console.log("AluARTmx: cuadro perdido");
 
       video.pause();
 
@@ -184,12 +178,12 @@
 
 
     /*
-      CUANDO EL VIDEO TERMINA
+      CUANDO TERMINA EL VIDEO
     */
 
     video.addEventListener("ended", function () {
 
-      console.log("Video terminado");
+      console.log("AluARTmx: video terminado");
 
       video.pause();
 
