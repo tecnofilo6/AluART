@@ -10,10 +10,7 @@
 <!-- A-FRAME -->
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-<!-- MINDAR CORE -->
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
-
-<!-- MINDAR A-FRAME -->
+<!-- MINDAR -->
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
@@ -33,9 +30,7 @@ body {
     font-family: Arial, sans-serif;
     font-size: 20px;
     z-index: 9999;
-    text-shadow:
-        0 0 5px black,
-        0 0 5px black;
+    text-shadow: 0 0 5px black;
 }
 
 </style>
@@ -53,7 +48,6 @@ body {
 
     mindar-image="
         imageTargetSrc: ./targets.mind;
-        maxTrack: 1;
     "
 
     color-space="sRGB"
@@ -65,75 +59,44 @@ body {
 
     vr-mode-ui="enabled: false"
 
-    device-orientation-permission-ui="
-        enabled: false
-    "
+    device-orientation-permission-ui="enabled: false"
 >
 
-
-    <!-- CÁMARA -->
-
-    <a-camera
-
-        position="0 0 0"
-
-        look-controls="enabled: false"
-
-    ></a-camera>
-
-
-    <!-- VIDEO -->
 
     <a-assets>
 
         <video
-
             id="videoAR"
-
             src="./10megas.mp4"
-
             loop
-
             muted
-
             playsinline
-
             webkit-playsinline
-
-            crossorigin="anonymous"
-
-        ></video>
+            crossorigin="anonymous">
+        </video>
 
     </a-assets>
 
 
-    <!-- CUADRO QUE MINDAR DEBE RECONOCER -->
+    <a-camera
+        position="0 0 0"
+        look-controls="enabled: false">
+    </a-camera>
+
 
     <a-entity
-
-        id="cuadro"
-
-        mindar-image-target="
-            targetIndex: 0
-        "
-
+        id="target"
+        mindar-image-target="targetIndex: 0"
     >
 
         <a-video
-
             id="videoPlano"
-
             src="#videoAR"
-
             position="0 0 0"
-
             width="1"
-
             height="0.5625"
-
-            rotation="0 0 0"
-
-        ></a-video>
+        >
+        </a-video>
 
     </a-entity>
 
@@ -143,80 +106,65 @@ body {
 
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+const escena = document.querySelector("a-scene");
 
-        const escena =
-            document.querySelector("a-scene");
+const target = document.querySelector("#target");
 
-        const cuadro =
-            document.querySelector("#cuadro");
+const video = document.querySelector("#videoAR");
 
-        const video =
-            document.querySelector("#videoAR");
-
-        const mensaje =
-            document.querySelector("#mensaje");
+const mensaje = document.querySelector("#mensaje");
 
 
-        // MINDAR LISTO
+// MINDAR LISTO
 
-        escena.addEventListener(
-            "arReady",
-            function () {
+escena.addEventListener("arReady", () => {
 
-                mensaje.innerText =
-                    "CÁMARA LISTA - APUNTA AL CUADRO";
+    console.log("MindAR listo");
 
-            }
-        );
+    mensaje.innerText =
+        "CÁMARA LISTA - APUNTA AL CUADRO";
 
-
-        // ERROR DE CÁMARA / AR
-
-        escena.addEventListener(
-            "arError",
-            function () {
-
-                mensaje.innerText =
-                    "ERROR AL INICIAR LA CÁMARA";
-
-            }
-        );
+});
 
 
-        // CUADRO DETECTADO
+// ERROR
 
-        cuadro.addEventListener(
-            "targetFound",
-            function () {
+escena.addEventListener("arError", () => {
 
-                mensaje.innerText =
-                    "¡CUADRO DETECTADO!";
+    console.log("Error iniciando MindAR");
 
-                video.play();
+    mensaje.innerText =
+        "ERROR AL INICIAR LA CÁMARA";
 
-            }
-        );
+});
 
 
-        // CUADRO PERDIDO
+// CUADRO ENCONTRADO
 
-        cuadro.addEventListener(
-            "targetLost",
-            function () {
+target.addEventListener("targetFound", () => {
 
-                mensaje.innerText =
-                    "APUNTA AL CUADRO";
+    console.log("CUADRO ENCONTRADO");
 
-                video.pause();
+    mensaje.innerText =
+        "¡CUADRO DETECTADO!";
 
-            }
-        );
+    video.play();
 
-    }
-);
+});
+
+
+// CUADRO PERDIDO
+
+target.addEventListener("targetLost", () => {
+
+    console.log("CUADRO PERDIDO");
+
+    mensaje.innerText =
+        "APUNTA AL CUADRO";
+
+    video.pause();
+
+});
 
 </script>
 
