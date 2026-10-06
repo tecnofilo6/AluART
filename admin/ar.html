@@ -31,6 +31,27 @@
       font-size: 14px;
       text-align: center;
     }
+
+    #botonSonido {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      background: white;
+      color: black;
+      border: none;
+      border-radius: 30px;
+
+      padding: 14px 25px;
+
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
   </style>
 </head>
 
@@ -39,6 +60,10 @@
   <div id="mensaje">
     AluARTmx · Apunta la cámara hacia tu cuadro
   </div>
+
+  <button id="botonSonido">
+    🔊 ACTIVAR SONIDO
+  </button>
 
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind;"
@@ -82,7 +107,9 @@
   </a-scene>
 
   <script>
+
     const video = document.querySelector("#videoAR");
+    const botonSonido = document.querySelector("#botonSonido");
 
     video.addEventListener("loadeddata", function () {
 
@@ -91,6 +118,15 @@
       });
 
     });
+
+    botonSonido.addEventListener("click", function () {
+
+      video.muted = false;
+
+      botonSonido.innerHTML = "🔊 SONIDO ACTIVADO";
+
+    });
+
   </script>
 
 </body>
