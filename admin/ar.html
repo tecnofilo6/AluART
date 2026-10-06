@@ -6,8 +6,8 @@
 
   <title>AluARTmx AR</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
 
   <style>
     html, body {
@@ -30,6 +30,7 @@
 <div id="ar-container"></div>
 
 <script>
+
 const start = async () => {
 
   const mindarThree = new MindARThree({
@@ -45,7 +46,6 @@ const start = async () => {
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
-  video.setAttribute("webkit-playsinline", "true");
 
   const texture = new THREE.VideoTexture(video);
 
@@ -55,7 +55,10 @@ const start = async () => {
     map: texture
   });
 
-  const plane = new THREE.Mesh(geometry, material);
+  const plane = new THREE.Mesh(
+    geometry,
+    material
+  );
 
   const anchor = mindarThree.addAnchor(0);
 
@@ -74,9 +77,11 @@ const start = async () => {
   renderer.setAnimationLoop(() => {
     renderer.render(scene, camera);
   });
+
 };
 
 start();
+
 </script>
 
 </body>
