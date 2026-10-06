@@ -10,273 +10,325 @@
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
-html, body {
+body {
     margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
     overflow: hidden;
     background: black;
 }
 
 #mensaje {
     position: fixed;
-    top: 20px;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 9999;
-    background: rgba(0,0,0,.75);
+
+    background: rgba(0,0,0,0.75);
     color: white;
-    padding: 12px 18px;
-    border-radius: 10px;
+
+    padding: 10px 18px;
+    border-radius: 20px;
+
     font-family: Arial, sans-serif;
+    font-size: 14px;
+
     text-align: center;
 }
 
-#sonido {
+#botonSonido {
     position: fixed;
+
     bottom: 25px;
     left: 50%;
+
     transform: translateX(-50%);
-    z-index: 9999;
-    padding: 14px 22px;
-    border: 0;
-    border-radius: 30px;
+
+    z-index: 999999;
+
     background: white;
     color: black;
-    font-size: 16px;
+
+    border: 3px solid black;
+    border-radius: 40px;
+
+    padding: 16px 30px;
+
+    font-family: Arial, sans-serif;
+    font-size: 18px;
     font-weight: bold;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
 }
 </style>
+
 </head>
 
 <body>
 
 <div id="mensaje">
-    📷 Apunta al cuadro...
+    AluARTmx · Preparando experiencia...
 </div>
 
-<button id="sonido">
+<button id="botonSonido">
     🔊 ACTIVAR SONIDO
 </button>
 
 <script>
 
-const parametros = new URLSearchParams(window.location.search);
+(async function(){
 
-const targetUrl = parametros.get("target");
-const videoUrl = parametros.get("video");
+    try {
 
-if (!targetUrl || !videoUrl) {
+        const parametros = new URLSearchParams(
+            window.location.search
+        );
 
-    document.getElementById("mensaje").innerHTML =
-        "❌ No se encontró el target o el video.";
+        const id = parametros.get("id");
+        const targetUrl = parametros.get("target");
+        const videoUrl = parametros.get("video");
 
-} else {
+        if (!id || !targetUrl || !videoUrl) {
 
-    const escena = document.createElement("a-scene");
+            document.getElementById("mensaje").innerHTML =
+                "❌ Esta experiencia AR no está configurada correctamente.";
 
-    escena.setAttribute(
-        "mindar-image",
-        "imageTargetSrc: " + targetUrl + ";"
-    );
+            return;
+        }
 
-    escena.setAttribute(
-        "vr-mode-ui",
-        "enabled: false"
-    );
+        document.getElementById("mensaje").innerHTML =
+            "AluARTmx · Cargando cuadro " + id + "...";
 
-    escena.setAttribute(
-        "device-orientation-permission-ui",
-        "enabled: false"
-    );
+        /*
+         * Creamos el HTML de A-Frame solamente DESPUÉS
+         * de conocer el target y el video.
+         *
+         * Esto evita el problema que tuvimos anteriormente
+         * al intentar cambiar MindAR después de iniciar.
+         */
 
-    escena.setAttribute(
-        "renderer",
-        "colorManagement: true; physicallyCorrectLights: true"
-    );
+        const escena = document.createElement("a-scene");
 
-    const assets = document.createElement("a-assets");
+        escena.setAttribute(
+            "mindar-image",
+            "imageTargetSrc: " + targetUrl + ";"
+        );
 
-    const video = document.createElement("video");
+        escena.setAttribute(
+            "vr-mode-ui",
+            "enabled: false"
+        );
 
-    video.id = "videoAR";
-    video.src = videoUrl;
-    video.setAttribute("preload", "auto");
-    video.setAttribute("muted", "");
-    video.muted = true;
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-    video.crossOrigin = "anonymous";
+        escena.setAttribute(
+            "device-orientation-permission-ui",
+            "enabled: false"
+        );
 
-    assets.appendChild(video);
+        escena.setAttribute(
+            "renderer",
+            "colorManagement: true; physicallyCorrectLights: true"
+        );
 
-    const entidad = document.createElement("a-entity");
+        /*
+         * VIDEO
+         */
 
-    entidad.setAttribute(
-        "mindar-image-target",
-        "targetIndex: 0"
-    );
+        const assets = document.createElement("a-assets");
 
-    const videoPlano = document.createElement("a-video");
+        const video = document.createElement("video");
 
-    videoPlano.setAttribute(
-        "src",
-        "#videoAR"
-    );
+        video.id = "videoAR";
+        video.src = videoUrl;
+        video.preload = "auto";
+        video.muted = true;
+        video.playsInline = true;
+        video.setAttribute("webkit-playsinline", "");
 
-    videoPlano.setAttribute(
-        "position",
-        "0 0 0"
-    );
+        assets.appendChild(video);
 
-    videoPlano.setAttribute(
-        "width",
-        "1"
-    );
+        /*
+         * CÁMARA
+         */
 
-    videoPlano.setAttribute(
-        "height",
-        "0.5625"
-    );
+        const camara = document.createElement("a-camera");
 
-    videoPlano.setAttribute(
-        "material",
-        "shader: flat;"
-    );
+        camara.setAttribute(
+            "position",
+            "0 0 0"
+        );
 
-    videoPlano.setAttribute(
-        "visible",
-        "true"
-    );
+        camara.setAttribute(
+            "look-controls",
+            "enabled: false"
+        );
 
-    entidad.appendChild(videoPlano);
+        /*
+         * TARGET
+         */
 
-    escena.appendChild(assets);
-    escena.appendChild(entidad);
+        const target = document.createElement("a-entity");
 
-    document.body.appendChild(escena);
+        target.setAttribute(
+            "mindar-image-target",
+            "targetIndex: 0"
+        );
 
-    const mensaje =
-        document.getElementById("mensaje");
+        /*
+         * VIDEO SOBRE EL TARGET
+         */
 
-    entidad.addEventListener(
-        "targetFound",
-        async () => {
+        const videoPlano = document.createElement("a-video");
 
-            mensaje.innerHTML =
-                "▶️ Reproduciendo...";
+        videoPlano.id = "videoPlano";
 
-            video.currentTime = 0;
+        videoPlano.setAttribute(
+            "src",
+            "#videoAR"
+        );
 
-            video.muted = true;
+        videoPlano.setAttribute(
+            "position",
+            "0 0 0"
+        );
 
-            try {
+        videoPlano.setAttribute(
+            "width",
+            "1"
+        );
 
-                await video.play();
+        videoPlano.setAttribute(
+            "height",
+            "0.5625"
+        );
+
+        videoPlano.setAttribute(
+            "rotation",
+            "0 0 0"
+        );
+
+        /*
+         * MUY IMPORTANTE:
+         * esta propiedad solucionó el problema
+         * que tuvimos con el video negro.
+         */
+
+        videoPlano.setAttribute(
+            "material",
+            "shader: flat;"
+        );
+
+        videoPlano.setAttribute(
+            "visible",
+            "true"
+        );
+
+        target.appendChild(videoPlano);
+
+        escena.appendChild(assets);
+        escena.appendChild(camara);
+        escena.appendChild(target);
+
+        document.body.appendChild(escena);
+
+        /*
+         * EVENTOS
+         */
+
+        const boton =
+            document.getElementById("botonSonido");
+
+        target.addEventListener(
+            "targetFound",
+            function(){
 
                 console.log(
-                    "Video reproduciendo correctamente"
+                    "AluARTmx: CUADRO " +
+                    id +
+                    " DETECTADO"
                 );
 
-            } catch (error) {
+                document.getElementById(
+                    "mensaje"
+                ).innerHTML =
+                    "AluARTmx · Cuadro " +
+                    id +
+                    " detectado";
 
-                console.error(
-                    "Error al reproducir:",
-                    error
-                );
-
-                mensaje.innerHTML =
-                    "▶️ Toca la pantalla para reproducir";
-
-            }
-
-        }
-    );
-
-    entidad.addEventListener(
-        "targetLost",
-        () => {
-
-            video.pause();
-
-        }
-    );
-
-    video.addEventListener(
-        "ended",
-        () => {
-
-            video.pause();
-
-            mensaje.innerHTML =
-                "📷 Apunta nuevamente al cuadro...";
-
-        }
-    );
-
-    document.getElementById("sonido").addEventListener(
-        "click",
-        async () => {
-
-            try {
-
-                video.muted = false;
-
-                await video.play();
-
-                mensaje.innerHTML =
-                    "🔊 Sonido activado";
-
-            } catch (error) {
-
-                console.error(error);
-
-            }
-
-        }
-    );
-
-    /*
-       Si el navegador bloquea el primer play,
-       cualquier toque del usuario podrá iniciarlo.
-    */
-
-    document.addEventListener(
-        "click",
-        async () => {
-
-            if (
-                !video.paused &&
-                !video.muted
-            ) {
-                return;
-            }
-
-            if (
-                video.currentTime > 0 ||
-                video.readyState >= 2
-            ) {
-
-                try {
-
-                    await video.play();
-
-                } catch (error) {
+                video.play().catch(function(error){
 
                     console.log(
-                        "El navegador mantiene bloqueada la reproducción"
+                        "Autoplay bloqueado:",
+                        error
                     );
 
-                }
+                });
 
             }
+        );
 
-        },
-        { once: false }
-    );
+        target.addEventListener(
+            "targetLost",
+            function(){
 
-}
+                console.log(
+                    "AluARTmx: CUADRO " +
+                    id +
+                    " PERDIDO"
+                );
+
+                video.pause();
+
+            }
+        );
+
+        boton.addEventListener(
+            "click",
+            function(){
+
+                video.muted = false;
+                video.volume = 1;
+
+                video.play().catch(
+                    function(error){
+
+                        console.log(
+                            "Error:",
+                            error
+                        );
+
+                    }
+                );
+
+                boton.innerHTML =
+                    "🔊 SONIDO ACTIVADO";
+
+            }
+        );
+
+        video.addEventListener(
+            "ended",
+            function(){
+
+                console.log(
+                    "AluARTmx: VIDEO TERMINADO"
+                );
+
+                video.pause();
+
+            }
+        );
+
+    } catch(error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "mensaje"
+        ).innerHTML =
+            "❌ Error al cargar la experiencia AR.";
+
+    }
+
+})();
 
 </script>
 
