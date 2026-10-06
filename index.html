@@ -232,6 +232,33 @@ input::placeholder{
 
 
 /* ================================
+   URL AR AUTOMATICA
+================================ */
+
+.ar-url-box{
+    margin-top:17px;
+    padding:13px;
+    border-radius:10px;
+    background:#0b0d10;
+    border:1px solid #252a30;
+}
+
+.ar-url-title{
+    color:#c9cdd2;
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:7px;
+}
+
+.ar-url{
+    color:#7f8790;
+    font-size:11px;
+    line-height:1.5;
+    word-break:break-all;
+}
+
+
+/* ================================
    BOTONES
 ================================ */
 
@@ -312,6 +339,13 @@ button:hover{
     color:#8c939c;
     font-size:13px;
     margin-top:4px;
+}
+
+.project-ar{
+    color:#666e77;
+    font-size:11px;
+    margin-top:8px;
+    word-break:break-all;
 }
 
 .project-video{
@@ -647,7 +681,7 @@ Nuevo cuadro
 </div>
 
 <p class="note">
-Registra un cuadro y genera su código QR. El QR utilizará exclusivamente el enlace del video.
+Registra un cuadro y genera automáticamente su experiencia AR y código QR.
 </p>
 
 
@@ -658,6 +692,7 @@ ID del cuadro
 <input
 id="id"
 placeholder="Ejemplo: 001"
+oninput="actualizarURL()"
 >
 
 
@@ -671,14 +706,20 @@ placeholder="Ejemplo: Familia Pérez"
 >
 
 
-<label>
-URL de la experiencia AR
-</label>
+<div class="ar-url-box">
 
-<input
-id="url"
-placeholder="https://tu-dominio.com/ar/001"
+<div class="ar-url-title">
+Experiencia AR generada automáticamente
+</div>
+
+<div
+class="ar-url"
+id="arPreview"
 >
+Escribe primero el ID del cuadro.
+</div>
+
+</div>
 
 
 <label>
@@ -687,7 +728,7 @@ Video
 
 <input
 id="video"
-placeholder="Pega aquí el enlace de Google Drive"
+placeholder="Pega aquí el enlace del video"
 >
 
 
@@ -750,7 +791,7 @@ AluARTmx
 </h2>
 
 <div class="qr-success">
-✓ QR GENERADO CORRECTAMENTE
+✓ QR DE EXPERIENCIA AR GENERADO
 </div>
 
 
@@ -759,7 +800,7 @@ AluARTmx
 
 <div>
 <strong>
-El QR contiene exclusivamente:
+El QR contiene:
 </strong>
 </div>
 
@@ -781,7 +822,15 @@ onclick="downloadQR()"
 
 <button
 class="modal-main"
-onclick="openVideo()"
+onclick="openAR(currentQR)"
+>
+✦ Abrir experiencia AR
+</button>
+
+
+<button
+class="modal-main"
+onclick="openVideo(currentQR)"
 >
 ▶ Ver video
 </button>
@@ -809,6 +858,15 @@ Cerrar
 
 const KEY =
 'aluartmx_projects_v3';
+
+
+/*
+   URL BASE DE TU SISTEMA AR
+*/
+
+const AR_BASE =
+'https://tecnofilo6.github.io/AluART/admin/ar.html';
+
 
 let currentQR = null;
 
@@ -841,31 +899,46 @@ function save(a){
 
 
 /* =================================
-   CONVERTIR DRIVE
+   GENERAR URL AR
 ================================= */
 
-function convertirDrive(url){
+function generarARUrl(id){
 
-    url = url.trim();
+    return AR_BASE
+        + '?id='
+        + encodeURIComponent(id);
 
-    let encontrado =
-        url.match(
-            /drive\.google\.com\/file\/d\/([^\/]+)/
-        );
+}
 
-    if(encontrado){
 
-        let idVideo =
-            encontrado[1];
+/* =================================
+   MOSTRAR URL AR EN FORMULARIO
+================================= */
 
-        return
-        'https://drive.google.com/file/d/'
-        + idVideo
-        + '/preview';
+function actualizarURL(){
+
+    const id =
+        document.querySelector('#id')
+        .value
+        .trim();
+
+
+    const preview =
+        document.querySelector('#arPreview');
+
+
+    if(!id){
+
+        preview.textContent =
+            'Escribe primero el ID del cuadro.';
+
+        return;
 
     }
 
-    return url;
+
+    preview.textContent =
+        generarARUrl(id);
 
 }
 
@@ -888,13 +961,7 @@ function createProject(){
         .trim();
 
 
-    const url =
-        document.querySelector('#url')
-        .value
-        .trim();
-
-
-    const videoOriginal =
+    const video =
         document.querySelector('#video')
         .value
         .trim();
@@ -911,18 +978,7 @@ function createProject(){
     }
 
 
-    if(!url){
-
-        alert(
-            'Escribe la URL de la experiencia AR.'
-        );
-
-        return;
-
-    }
-
-
-    if(!videoOriginal){
+    if(!video){
 
         alert(
             'Pega el enlace del VIDEO.'
@@ -933,21 +989,33 @@ function createProject(){
     }
 
 
-    const video =
-        convertirDrive(
-            videoOriginal
-        );
+    /*
+       GENERAMOS AUTOMÁTICAMENTE
+       LA URL DE LA EXPERIENCIA AR
+    */
+
+    const url =
+        generarARUrl(id);
 
 
     let a =
         projects();
 
 
+    /*
+       Si ya existe el ID,
+       lo reemplazamos.
+    */
+
     a =
         a.filter(
             x => x.id !== id
         );
 
+
+    /*
+       Guardamos el nuevo proyecto.
+    */
 
     a.unshift({
 
@@ -969,12 +1037,30 @@ function createProject(){
     save(a);
 
 
+    /*
+       Mostrar QR de la experiencia AR.
+    */
+
     showQR(
         a[0]
     );
 
 
     render();
+
+
+    /*
+       Limpiar formulario.
+    */
+
+    document.querySelector('#id').value = '';
+
+    document.querySelector('#name').value = '';
+
+    document.querySelector('#video').value = '';
+
+    document.querySelector('#arPreview').textContent =
+        'Escribe primero el ID del cuadro.';
 
 }
 
@@ -994,14 +1080,20 @@ function showQR(p){
         `AluARTmx • ${p.id}`;
 
 
+    /*
+       IMPORTANTE:
+       EL QR AHORA CONTIENE
+       LA URL DE LA EXPERIENCIA AR.
+    */
+
     const destino =
-        p.video;
+        p.url;
 
 
     if(!destino){
 
         alert(
-            'Este cuadro no tiene un video guardado.'
+            'Este cuadro no tiene una URL AR.'
         );
 
         return;
@@ -1054,11 +1146,11 @@ function showQR(p){
    ABRIR VIDEO
 ================================= */
 
-function openVideo(){
+function openVideo(p){
 
     if(
-        !currentQR ||
-        !currentQR.video
+        !p ||
+        !p.video
     ){
 
         alert(
@@ -1071,7 +1163,7 @@ function openVideo(){
 
 
     window.open(
-        currentQR.video,
+        p.video,
         '_blank'
     );
 
@@ -1084,10 +1176,13 @@ function openVideo(){
 
 function openAR(p){
 
-    if(!p.url){
+    if(
+        !p ||
+        !p.url
+    ){
 
         alert(
-            'Este cuadro no tiene una URL AR.'
+            'No hay experiencia AR disponible.'
         );
 
         return;
@@ -1308,6 +1403,15 @@ function render(){
                         </div>
 
                     </div>
+
+                </div>
+
+
+                <div class="project-ar">
+
+                    ✦ AR
+
+                    ${esc(p.url)}
 
                 </div>
 
