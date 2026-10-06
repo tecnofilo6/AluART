@@ -22,205 +22,302 @@ body {
 }
 
 #mensaje {
+
     position: fixed;
+
     top: 15px;
+
     left: 50%;
+
     transform: translateX(-50%);
+
     z-index: 9999;
+
     background: rgba(0,0,0,0.75);
+
     color: white;
+
     padding: 10px 18px;
+
     border-radius: 20px;
+
     font-family: Arial, sans-serif;
+
     font-size: 14px;
+
     text-align: center;
+
 }
 
 #botonSonido {
+
     position: fixed;
+
     bottom: 25px;
+
     left: 50%;
+
     transform: translateX(-50%);
+
     z-index: 999999;
-    display: block;
+
     background: white;
+
     color: black;
+
     border: 3px solid black;
+
     border-radius: 40px;
+
     padding: 16px 30px;
+
     font-family: Arial, sans-serif;
+
     font-size: 18px;
+
     font-weight: bold;
+
     box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+
 }
 
 </style>
 
 </head>
 
+
 <body>
 
+
 <div id="mensaje">
-    AluARTmx · Apunta la cámara hacia tu cuadro
+
+AluARTmx · Apunta la cámara hacia tu cuadro
+
 </div>
 
+
 <button id="botonSonido">
-    🔊 ACTIVAR SONIDO
+
+🔊 ACTIVAR SONIDO
+
 </button>
 
 
 <a-scene
 
-    mindar-image="imageTargetSrc: ./001.mind;"
+mindar-image="imageTargetSrc: ./001.mind;"
 
-    vr-mode-ui="enabled: false"
+vr-mode-ui="enabled: false"
 
-    device-orientation-permission-ui="enabled: false"
+device-orientation-permission-ui="enabled: false"
 
-    renderer="colorManagement: true; physicallyCorrectLights: true">
-
-
-    <a-assets>
-
-        <video
-            id="videoAR"
-            src="./001.mp4"
-            preload="auto"
-            muted
-            playsinline
-            webkit-playsinline>
-        </video>
-
-    </a-assets>
+renderer="colorManagement: true; physicallyCorrectLights: true">
 
 
-    <a-camera
-        position="0 0 0"
-        look-controls="enabled: false">
-    </a-camera>
+<a-assets>
+
+<video
+
+id="videoAR"
+
+src="./001.mp4"
+
+preload="auto"
+
+muted
+
+playsinline
+
+webkit-playsinline>
+
+</video>
+
+</a-assets>
 
 
-    <a-entity
-        id="targetAR"
-        mindar-image-target="targetIndex: 0">
+<a-camera
+
+position="0 0 0"
+
+look-controls="enabled: false">
+
+</a-camera>
 
 
-        <a-video
-            src="#videoAR"
-            position="0 0 0"
-            width="1"
-            height="0.5625"
-            rotation="0 0 0"
-            autoplay>
-        </a-video>
+<a-entity
+
+id="targetAR"
+
+mindar-image-target="targetIndex: 0">
 
 
-    </a-entity>
+<a-video
+
+id="videoPlano"
+
+src="#videoAR"
+
+position="0 0 0"
+
+width="1"
+
+height="0.5625"
+
+rotation="0 0 0"
+
+material="shader: flat;"
+
+visible="true">
+
+</a-video>
+
+
+</a-entity>
+
 
 </a-scene>
 
 
 <script>
 
+
 const video =
-    document.getElementById("videoAR");
+document.getElementById("videoAR");
+
+
+const videoPlano =
+document.getElementById("videoPlano");
+
 
 const boton =
-    document.getElementById("botonSonido");
+document.getElementById("botonSonido");
+
 
 const target =
-    document.getElementById("targetAR");
+document.getElementById("targetAR");
 
 
-/* SONIDO */
+/* ==========================
+   CUADRO DETECTADO
+========================== */
+
+target.addEventListener(
+
+"targetFound",
+
+function() {
+
+console.log(
+"AluARTmx: CUADRO DETECTADO"
+);
+
+
+/* Reiniciar textura */
+
+videoPlano.setAttribute(
+"visible",
+"true"
+);
+
+
+/* Intentar reproducir */
+
+video.play().catch(
+
+function(error) {
+
+console.log(
+"Autoplay bloqueado:",
+error
+);
+
+}
+
+);
+
+}
+
+);
+
+
+/* ==========================
+   CUADRO PERDIDO
+========================== */
+
+target.addEventListener(
+
+"targetLost",
+
+function() {
+
+console.log(
+"AluARTmx: CUADRO PERDIDO"
+);
+
+video.pause();
+
+}
+
+);
+
+
+/* ==========================
+   BOTÓN SONIDO
+========================== */
 
 boton.addEventListener(
-    "click",
-    function() {
 
-        video.muted = false;
+"click",
 
-        video.volume = 1;
+function() {
 
-        boton.innerHTML =
-            "🔊 SONIDO ACTIVADO";
+video.muted = false;
 
-        video.play().catch(
-            function(error) {
+video.volume = 1;
 
-                console.log(
-                    "Error al reproducir:",
-                    error
-                );
+video.play().catch(
 
-            }
-        );
+function(error) {
 
-    }
+console.log(
+"Error:",
+error
+);
+
+}
+
+);
+
+boton.innerHTML =
+"🔊 SONIDO ACTIVADO";
+
+}
+
 );
 
 
-/* CUADRO DETECTADO */
-
-target.addEventListener(
-    "targetFound",
-    function() {
-
-        console.log(
-            "AluARTmx: cuadro detectado"
-        );
-
-        if (!video.ended) {
-
-            video.play().catch(
-                function(error) {
-
-                    console.log(
-                        "Error:",
-                        error
-                    );
-
-                }
-            );
-
-        }
-
-    }
-);
-
-
-/* CUADRO PERDIDO */
-
-target.addEventListener(
-    "targetLost",
-    function() {
-
-        console.log(
-            "AluARTmx: cuadro perdido"
-        );
-
-        video.pause();
-
-    }
-);
-
-
-/* VIDEO TERMINADO */
+/* ==========================
+   VIDEO TERMINADO
+========================== */
 
 video.addEventListener(
-    "ended",
-    function() {
 
-        console.log(
-            "AluARTmx: video terminado"
-        );
+"ended",
 
-        video.pause();
+function() {
 
-    }
+console.log(
+"AluARTmx: VIDEO TERMINADO"
+);
+
+video.pause();
+
+}
+
 );
 
 </script>
+
 
 </body>
 
