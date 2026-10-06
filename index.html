@@ -13,68 +13,227 @@
 
 <style>
 
+/* ================================
+   ALUARTMX DASHBOARD
+================================ */
+
 *{
     box-sizing:border-box;
 }
 
 body{
     margin:0;
-    background:#f3f4f6;
-    color:#111;
-    font-family:Arial,sans-serif;
+    background:#0b0d10;
+    color:#f5f5f5;
+    font-family:Arial,Helvetica,sans-serif;
 }
+
+
+/* ================================
+   HEADER
+================================ */
 
 header{
-    background:#111;
-    color:#fff;
-    padding:22px 18px;
+    height:76px;
+    background:#101317;
+    border-bottom:1px solid #292d32;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 32px;
 }
 
-header strong{
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo-icon{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    background:linear-gradient(135deg,#ffffff,#777);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#111;
+    font-weight:900;
+    font-size:18px;
+}
+
+.logo-text{
+    font-size:19px;
+    font-weight:800;
     letter-spacing:.08em;
 }
 
-main{
-    max-width:1050px;
-    margin:24px auto;
-    padding:0 16px;
+.logo-sub{
+    color:#858b93;
+    font-size:11px;
+    margin-top:3px;
+    letter-spacing:.08em;
 }
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:#9ca3af;
+    font-size:13px;
+}
+
+.status-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#22c55e;
+    box-shadow:0 0 10px #22c55e;
+}
+
+
+/* ================================
+   CONTENEDOR
+================================ */
+
+main{
+    max-width:1200px;
+    margin:0 auto;
+    padding:35px 22px 60px;
+}
+
+
+/* ================================
+   HERO
+================================ */
+
+.hero{
+    margin-bottom:30px;
+}
+
+.hero h1{
+    margin:0;
+    font-size:32px;
+    letter-spacing:-.03em;
+}
+
+.hero p{
+    color:#8c939c;
+    margin:8px 0 0;
+}
+
+
+/* ================================
+   ESTADISTICAS
+================================ */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-bottom:24px;
+}
+
+.stat{
+    background:#11151a;
+    border:1px solid #252a30;
+    border-radius:15px;
+    padding:18px;
+}
+
+.stat-label{
+    color:#858c95;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+}
+
+.stat-number{
+    font-size:26px;
+    font-weight:800;
+    margin-top:7px;
+}
+
+
+/* ================================
+   GRID PRINCIPAL
+================================ */
 
 .grid{
     display:grid;
-    grid-template-columns:360px 1fr;
+    grid-template-columns:390px 1fr;
     gap:20px;
 }
 
+
+/* ================================
+   CARDS
+================================ */
+
 .card{
-    background:#fff;
+    background:#11151a;
+    border:1px solid #252a30;
     border-radius:18px;
-    padding:20px;
-    box-shadow:0 4px 20px #0001;
+    padding:24px;
+    box-shadow:0 10px 35px #0005;
 }
 
-h1{
-    margin:0 0 6px;
-    font-size:25px;
+.card-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
 }
 
-h2{
-    margin-top:0;
+.card h2{
+    margin:0;
+    font-size:19px;
 }
+
+.note{
+    font-size:13px;
+    color:#7f8790;
+    line-height:1.5;
+}
+
+
+/* ================================
+   FORMULARIO
+================================ */
 
 label{
     display:block;
+    color:#c9cdd2;
+    font-size:13px;
     font-weight:700;
-    margin:15px 0 7px;
+    margin:17px 0 7px;
 }
 
 input{
     width:100%;
-    padding:12px;
-    border:1px solid #d1d5db;
+    padding:13px 14px;
     border-radius:10px;
-    font-size:15px;
+    border:1px solid #30363d;
+    background:#0b0d10;
+    color:#fff;
+    font-size:14px;
+    outline:none;
+    transition:.2s;
 }
+
+input:focus{
+    border-color:#777;
+    box-shadow:0 0 0 3px #ffffff0d;
+}
+
+input::placeholder{
+    color:#565d65;
+}
+
+
+/* ================================
+   BOTONES
+================================ */
 
 button{
     border:0;
@@ -82,35 +241,83 @@ button{
     padding:11px 14px;
     font-weight:700;
     cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-1px);
 }
 
 .primary{
-    background:#111;
-    color:#fff;
     width:100%;
-    margin-top:18px;
+    margin-top:20px;
+    padding:14px;
+    background:#fff;
+    color:#111;
+    font-size:15px;
 }
 
-.danger{
-    background:#fee2e2;
-    color:#991b1b;
+.primary:hover{
+    background:#e7e7e7;
 }
+
+
+/* ================================
+   LISTA
+================================ */
+
+.list-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:15px;
+}
+
+.badge{
+    background:#20252b;
+    color:#aeb4bb;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:11px;
+}
+
 
 .item{
-    border:1px solid #e5e7eb;
+    background:#0c0f12;
+    border:1px solid #252a30;
     border-radius:14px;
-    padding:14px;
-    margin:10px 0;
+    padding:16px;
+    margin:11px 0;
+    transition:.2s;
+}
+
+.item:hover{
+    border-color:#444a51;
+    transform:translateY(-1px);
+}
+
+.item-top{
     display:flex;
     justify-content:space-between;
     gap:12px;
-    align-items:center;
+    align-items:flex-start;
 }
 
-.item small{
-    display:block;
-    color:#6b7280;
+.project-id{
+    font-size:16px;
+    font-weight:800;
+}
+
+.project-client{
+    color:#8c939c;
+    font-size:13px;
     margin-top:4px;
+}
+
+.project-video{
+    color:#626a73;
+    font-size:11px;
+    margin-top:10px;
     word-break:break-all;
 }
 
@@ -118,25 +325,68 @@ button{
     display:flex;
     gap:7px;
     flex-wrap:wrap;
+    margin-top:14px;
 }
+
+.action{
+    background:#1b2026;
+    color:#d8dce0;
+    border:1px solid #30363d;
+    font-size:12px;
+}
+
+.action:hover{
+    background:#272d34;
+}
+
+.qr-button{
+    background:#fff;
+    color:#111;
+}
+
+.danger{
+    background:#30191b;
+    color:#ff9c9c;
+    border:1px solid #542629;
+}
+
+
+/* ================================
+   QR MODAL
+================================ */
 
 #qrModal{
     display:none;
     position:fixed;
     inset:0;
-    background:#0008;
+    background:#000b;
     align-items:center;
     justify-content:center;
     padding:20px;
+    z-index:100;
+    backdrop-filter:blur(7px);
 }
 
 .modal{
-    background:#fff;
-    border-radius:18px;
-    padding:24px;
+    background:#f7f7f7;
+    color:#111;
+    border-radius:20px;
+    padding:25px;
     text-align:center;
-    max-width:360px;
+    max-width:390px;
     width:100%;
+    box-shadow:0 20px 80px #000;
+}
+
+.modal h2{
+    margin:0;
+}
+
+.qr-success{
+    color:#14803c;
+    font-size:13px;
+    font-weight:800;
+    margin:8px 0 15px;
 }
 
 #qr{
@@ -145,22 +395,110 @@ button{
     margin:15px;
 }
 
-.note{
-    font-size:13px;
-    color:#6b7280;
-    line-height:1.4;
+#qr img{
+    border:10px solid white;
+}
+
+.qr-url{
+    background:#ededed;
+    padding:11px;
+    border-radius:9px;
+    font-size:11px;
+    color:#555;
     word-break:break-all;
+    margin-bottom:15px;
 }
 
-.exito{
-    color:#008f39;
-    font-weight:bold;
+.modal button{
+    margin:4px;
 }
 
-@media(max-width:800px){
+.modal-main{
+    background:#111;
+    color:#fff;
+}
+
+.modal-close{
+    background:#ddd;
+    color:#222;
+}
+
+
+/* ================================
+   VACIO
+================================ */
+
+.empty{
+    text-align:center;
+    padding:55px 20px;
+    border:1px dashed #30363d;
+    border-radius:14px;
+}
+
+.empty-icon{
+    font-size:35px;
+    margin-bottom:12px;
+}
+
+.empty strong{
+    display:block;
+    margin-bottom:6px;
+}
+
+.empty span{
+    color:#666e77;
+    font-size:13px;
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media(max-width:850px){
+
+    header{
+        padding:0 18px;
+    }
+
+    .status{
+        display:none;
+    }
+
+    main{
+        padding:25px 15px 45px;
+    }
 
     .grid{
         grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
+
+}
+
+@media(max-width:500px){
+
+    header{
+        height:68px;
+    }
+
+    .logo-text{
+        font-size:16px;
+    }
+
+    .hero h1{
+        font-size:27px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .card{
+        padding:18px;
     }
 
 }
@@ -169,51 +507,173 @@ button{
 
 </head>
 
+
 <body>
+
+
+<!-- =================================
+     HEADER
+================================= -->
 
 <header>
 
-<strong>AluARTmx • REALIDAD AUMENTADA</strong>
+<div class="logo">
+
+<div class="logo-icon">
+A
+</div>
+
+<div>
+
+<div class="logo-text">
+ALUARTmx
+</div>
+
+<div class="logo-sub">
+REALIDAD AUMENTADA
+</div>
+
+</div>
+
+</div>
+
+
+<div class="status">
+
+<div class="status-dot"></div>
+
+Sistema activo
+
+</div>
 
 </header>
 
 
+
 <main>
+
+
+<!-- =================================
+     TITULO
+================================= -->
+
+<div class="hero">
+
+<h1>
+Panel de experiencias
+</h1>
+
+<p>
+Crea, administra y genera los QR de tus cuadros AluARTmx.
+</p>
+
+</div>
+
+
+
+<!-- =================================
+     ESTADISTICAS
+================================= -->
+
+<div class="stats">
+
+<div class="stat">
+
+<div class="stat-label">
+Cuadros creados
+</div>
+
+<div
+class="stat-number"
+id="statTotal"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Experiencias con video
+</div>
+
+<div
+class="stat-number"
+id="statVideo"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-label">
+Sistema
+</div>
+
+<div class="stat-number">
+✓
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =================================
+     GRID
+================================= -->
 
 <div class="grid">
 
 
-<!-- ============================= -->
-<!-- CREAR CUADRO -->
-<!-- ============================= -->
+<!-- =================================
+     NUEVO CUADRO
+================================= -->
 
 <section class="card">
 
-<h1>Nuevo cuadro</h1>
+<div class="card-title">
+
+<h2>
+Nuevo cuadro
+</h2>
+
+</div>
 
 <p class="note">
-Crea un registro y genera su QR.
-El QR utilizará exclusivamente el enlace del VIDEO.
+Registra un cuadro y genera su código QR. El QR utilizará exclusivamente el enlace del video.
 </p>
 
 
-<label>ID del cuadro</label>
+<label>
+ID del cuadro
+</label>
 
 <input
 id="id"
-placeholder="001"
+placeholder="Ejemplo: 001"
 >
 
 
-<label>Nombre / cliente</label>
+<label>
+Nombre / cliente
+</label>
 
 <input
 id="name"
-placeholder="Familia Pérez"
+placeholder="Ejemplo: Familia Pérez"
 >
 
 
-<label>URL de la experiencia AR</label>
+<label>
+URL de la experiencia AR
+</label>
 
 <input
 id="url"
@@ -221,7 +681,9 @@ placeholder="https://tu-dominio.com/ar/001"
 >
 
 
-<label>Video (URL para la demo)</label>
+<label>
+Video
+</label>
 
 <input
 id="video"
@@ -234,7 +696,7 @@ class="primary"
 onclick="createProject()"
 >
 
-Crear cuadro + QR
+＋ Crear cuadro y generar QR
 
 </button>
 
@@ -242,13 +704,27 @@ Crear cuadro + QR
 
 
 
-<!-- ============================= -->
-<!-- LISTA DE CUADROS -->
-<!-- ============================= -->
+<!-- =================================
+     MIS CUADROS
+================================= -->
 
 <section class="card">
 
-<h2>Mis cuadros</h2>
+<div class="list-header">
+
+<h2>
+Mis cuadros
+</h2>
+
+<div
+class="badge"
+id="counter"
+>
+0 cuadros
+</div>
+
+</div>
+
 
 <div id="list"></div>
 
@@ -261,58 +737,61 @@ Crear cuadro + QR
 
 
 
-<!-- ============================= -->
-<!-- VENTANA DEL QR -->
-<!-- ============================= -->
+<!-- =================================
+     MODAL QR
+================================= -->
 
 <div id="qrModal">
 
 <div class="modal">
 
 <h2 id="qrTitle">
-QR
+AluARTmx
 </h2>
 
-<p class="exito">
-QR GENERADO CORRECTAMENTE
-</p>
+<div class="qr-success">
+✓ QR GENERADO CORRECTAMENTE
+</div>
+
 
 <div id="qr"></div>
 
-<p class="note">
-<strong>El QR contiene exclusivamente:</strong>
-</p>
 
-<p
-class="note"
+<div>
+<strong>
+El QR contiene exclusivamente:
+</strong>
+</div>
+
+
+<div
+class="qr-url"
 id="qrUrl"
-></p>
+>
+</div>
 
 
 <button
+class="modal-main"
 onclick="downloadQR()"
 >
-
-Descargar QR
-
+↓ Descargar QR
 </button>
 
 
 <button
+class="modal-main"
 onclick="openVideo()"
 >
-
-Abrir video
-
+▶ Ver video
 </button>
 
 
 <button
+class="modal-close"
 onclick="closeQR()"
 >
-
 Cerrar
-
 </button>
 
 </div>
@@ -324,18 +803,19 @@ Cerrar
 <script>
 
 
-/* =========================================
+/* =================================
    CONFIGURACIÓN
-========================================= */
+================================= */
 
-const KEY = 'aluartmx_projects_v3';
+const KEY =
+'aluartmx_projects_v3';
 
 let currentQR = null;
 
 
-/* =========================================
-   OBTENER CUADROS GUARDADOS
-========================================= */
+/* =================================
+   OBTENER PROYECTOS
+================================= */
 
 function projects(){
 
@@ -346,9 +826,9 @@ function projects(){
 }
 
 
-/* =========================================
-   GUARDAR CUADROS
-========================================= */
+/* =================================
+   GUARDAR
+================================= */
 
 function save(a){
 
@@ -360,47 +840,39 @@ function save(a){
 }
 
 
-/* =========================================
-   CONVERTIR LINK DE GOOGLE DRIVE
-========================================= */
+/* =================================
+   CONVERTIR DRIVE
+================================= */
 
 function convertirDrive(url){
 
     url = url.trim();
 
-    /*
-    Detecta enlaces como:
-
-    https://drive.google.com/file/d/ID/view
-    */
-
-    let encontrado = url.match(
-        /drive\.google\.com\/file\/d\/([^\/]+)/
-    );
+    let encontrado =
+        url.match(
+            /drive\.google\.com\/file\/d\/([^\/]+)/
+        );
 
     if(encontrado){
 
-        let idVideo = encontrado[1];
+        let idVideo =
+            encontrado[1];
 
-        return 'https://drive.google.com/file/d/'
+        return
+        'https://drive.google.com/file/d/'
         + idVideo
         + '/preview';
 
     }
-
-    /*
-    Si no es Drive,
-    dejamos el enlace como está.
-    */
 
     return url;
 
 }
 
 
-/* =========================================
+/* =================================
    CREAR CUADRO
-========================================= */
+================================= */
 
 function createProject(){
 
@@ -427,10 +899,6 @@ function createProject(){
         .value
         .trim();
 
-
-    /* ===============================
-       VALIDACIONES
-    =============================== */
 
     if(!id){
 
@@ -465,29 +933,20 @@ function createProject(){
     }
 
 
-    /* ===============================
-       CONVERTIR VIDEO
-    =============================== */
-
     const video =
-        convertirDrive(videoOriginal);
+        convertirDrive(
+            videoOriginal
+        );
 
 
-    /* ===============================
-       GUARDAR
-    =============================== */
-
-    let a = projects();
+    let a =
+        projects();
 
 
-    /*
-    Si ya existe el mismo ID,
-    lo reemplazamos.
-    */
-
-    a = a.filter(
-        x => x.id !== id
-    );
+    a =
+        a.filter(
+            x => x.id !== id
+        );
 
 
     a.unshift({
@@ -510,25 +969,19 @@ function createProject(){
     save(a);
 
 
-    /* ===============================
-       GENERAR QR
-    =============================== */
+    showQR(
+        a[0]
+    );
 
-    showQR(a[0]);
-
-
-    /* ===============================
-       ACTUALIZAR LISTA
-    =============================== */
 
     render();
 
 }
 
 
-/* =========================================
+/* =================================
    MOSTRAR QR
-========================================= */
+================================= */
 
 function showQR(p){
 
@@ -541,18 +994,8 @@ function showQR(p){
         `AluARTmx • ${p.id}`;
 
 
-    /*
-    ========================================
-    IMPORTANTE
-    ========================================
-
-    EL QR USA SOLAMENTE p.video
-
-    NO usa p.url
-    NO usa la URL de experiencia AR
-    */
-
-    const destino = p.video;
+    const destino =
+        p.video;
 
 
     if(!destino){
@@ -566,34 +1009,18 @@ function showQR(p){
     }
 
 
-    /*
-    Mostrar exactamente
-    qué contiene el QR
-    */
-
     document.querySelector(
         '#qrUrl'
     ).textContent =
         destino;
 
 
-    /*
-    Limpiar QR anterior
-    */
-
     const q =
         document.querySelector('#qr');
 
+
     q.innerHTML = '';
 
-
-    /*
-    CREAR QR
-
-    IMPORTANTE:
-    text: destino
-
-    */
 
     new QRCode(
 
@@ -615,10 +1042,6 @@ function showQR(p){
     );
 
 
-    /*
-    Mostrar ventana
-    */
-
     document.querySelector(
         '#qrModal'
     ).style.display =
@@ -627,9 +1050,9 @@ function showQR(p){
 }
 
 
-/* =========================================
+/* =================================
    ABRIR VIDEO
-========================================= */
+================================= */
 
 function openVideo(){
 
@@ -655,9 +1078,34 @@ function openVideo(){
 }
 
 
-/* =========================================
+/* =================================
+   ABRIR AR
+================================= */
+
+function openAR(p){
+
+    if(!p.url){
+
+        alert(
+            'Este cuadro no tiene una URL AR.'
+        );
+
+        return;
+
+    }
+
+
+    window.open(
+        p.url,
+        '_blank'
+    );
+
+}
+
+
+/* =================================
    CERRAR QR
-========================================= */
+================================= */
 
 function closeQR(){
 
@@ -669,9 +1117,9 @@ function closeQR(){
 }
 
 
-/* =========================================
+/* =================================
    DESCARGAR QR
-========================================= */
+================================= */
 
 function downloadQR(){
 
@@ -709,23 +1157,9 @@ function downloadQR(){
 }
 
 
-/* =========================================
-   ABRIR EXPERIENCIA AR
-========================================= */
-
-function openAR(p){
-
-    window.open(
-        p.url,
-        '_blank'
-    );
-
-}
-
-
-/* =========================================
-   ELIMINAR CUADRO
-========================================= */
+/* =================================
+   ELIMINAR
+================================= */
 
 function removeProject(id){
 
@@ -748,58 +1182,107 @@ function removeProject(id){
 }
 
 
-/* =========================================
+/* =================================
    ESCAPAR TEXTO
-========================================= */
+================================= */
 
 function esc(s){
 
-    return String(s || '')
-        .replace(
-            /[&<>"']/g,
+    return String(
+        s || ''
+    )
+    .replace(
+        /[&<>"']/g,
 
-            function(m){
+        function(m){
 
-                return {
+            return {
 
-                    '&':'&amp;',
-                    '<':'&lt;',
-                    '>':'&gt;',
-                    '"':'&quot;',
-                    "'":'&#39;'
+                '&':'&amp;',
+                '<':'&lt;',
+                '>':'&gt;',
+                '"':'&quot;',
+                "'":'&#39;'
 
-                }[m];
+            }[m];
 
-            }
+        }
 
-        );
+    );
 
 }
 
 
-/* =========================================
-   MOSTRAR LISTA
-========================================= */
+/* =================================
+   RENDERIZAR
+================================= */
 
 function render(){
 
     const box =
-        document.querySelector('#list');
+        document.querySelector(
+            '#list'
+        );
 
 
     const a =
         projects();
 
 
+    /* ESTADISTICAS */
+
+    document.querySelector(
+        '#statTotal'
+    ).textContent =
+        a.length;
+
+
+    document.querySelector(
+        '#statVideo'
+    ).textContent =
+        a.filter(
+            x => x.video
+        ).length;
+
+
+    document.querySelector(
+        '#counter'
+    ).textContent =
+        a.length === 1
+        ? '1 cuadro'
+        : `${a.length} cuadros`;
+
+
+    /* SIN CUADROS */
+
     if(!a.length){
 
-        box.innerHTML =
-            '<p class="note">Todavía no hay cuadros.</p>';
+        box.innerHTML = `
+
+        <div class="empty">
+
+            <div class="empty-icon">
+            🖼️
+            </div>
+
+            <strong>
+            Todavía no tienes cuadros
+            </strong>
+
+            <span>
+            Crea tu primera experiencia AluARTmx.
+            </span>
+
+        </div>
+
+        `;
 
         return;
 
     }
 
+
+    /* LISTA */
 
     box.innerHTML =
         a.map(
@@ -808,51 +1291,77 @@ function render(){
 
             <div class="item">
 
-                <div>
+                <div class="item-top">
 
-                    <b>
-                    ${esc(p.id)}
-                    —
-                    ${esc(p.name)}
-                    </b>
+                    <div>
 
-                    <small>
-                    Video:
+                        <div class="project-id">
+
+                        ${esc(p.id)}
+
+                        </div>
+
+                        <div class="project-client">
+
+                        ${esc(p.name)}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="project-video">
+
+                    🎬
                     ${esc(p.video)}
-                    </small>
 
                 </div>
 
 
                 <div class="actions">
 
+
                     <button
+                    class="action qr-button"
                     onclick='showQR(${JSON.stringify(p)})'
                     >
-                    QR
+
+                    ▣ QR
+
                     </button>
 
 
                     <button
+                    class="action"
                     onclick='openVideo(${JSON.stringify(p)})'
                     >
-                    Video
+
+                    ▶ Video
+
                     </button>
 
 
                     <button
+                    class="action"
                     onclick='openAR(${JSON.stringify(p)})'
                     >
-                    AR
+
+                    ✦ AR
+
                     </button>
 
 
                     <button
-                    class="danger"
+                    class="action danger"
                     onclick="removeProject('${esc(p.id)}')"
                     >
-                    ×
+
+                    Eliminar
+
                     </button>
+
 
                 </div>
 
@@ -866,9 +1375,9 @@ function render(){
 }
 
 
-/* =========================================
-   INICIAR PANEL
-========================================= */
+/* =================================
+   INICIAR
+================================= */
 
 render();
 
