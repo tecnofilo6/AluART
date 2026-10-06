@@ -17,44 +17,34 @@
       background: black;
     }
 
-    #sonido {
+    #mensaje {
       position: fixed;
-      bottom: 30px;
+      top: 15px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-
-      background: white;
-      color: black;
-
-      border: none;
-      border-radius: 30px;
-
-      padding: 14px 24px;
-
+      background: rgba(0,0,0,0.75);
+      color: white;
+      padding: 10px 18px;
+      border-radius: 20px;
       font-family: Arial, sans-serif;
-      font-size: 16px;
-      font-weight: bold;
-
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    }
-
-    #sonido.oculto {
-      display: none;
+      font-size: 14px;
+      text-align: center;
     }
   </style>
 </head>
 
 <body>
 
-  <button id="sonido" class="oculto">
-    🔊 ACTIVAR SONIDO
-  </button>
+  <div id="mensaje">
+    AluARTmx · Apunta la cámara hacia tu cuadro
+  </div>
 
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind;"
     vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false">
+    device-orientation-permission-ui="enabled: false"
+    renderer="colorManagement: true; physicallyCorrectLights: true">
 
     <a-assets>
 
@@ -81,7 +71,10 @@
         src="#videoAR"
         position="0 0 0"
         width="1"
-        height="0.5625">
+        height="0.5625"
+        rotation="0 0 0"
+        autoplay
+        loop>
       </a-video>
 
     </a-entity>
@@ -89,54 +82,15 @@
   </a-scene>
 
   <script>
+    const video = document.querySelector("#videoAR");
 
-    const video = document.getElementById("videoAR");
-    const boton = document.getElementById("sonido");
+    video.addEventListener("loadeddata", function () {
 
-    // Cuando MindAR encuentra el cuadro
-    const target = document.querySelector("[mindar-image-target]");
-
-    target.addEventListener("targetFound", function () {
-
-      console.log("Cuadro encontrado");
-
-      // Reproducir automáticamente sin sonido
-      video.muted = true;
-
-      video.play().then(function () {
-
-        // Mostrar botón para activar sonido
-        boton.classList.remove("oculto");
-
-      }).catch(function(error) {
-
-        console.log("Error reproduciendo video:", error);
-
+      video.play().catch(function () {
+        console.log("El navegador bloqueó la reproducción automática.");
       });
 
     });
-
-    // Cuando se pierde el cuadro
-    target.addEventListener("targetLost", function () {
-
-      console.log("Cuadro perdido");
-
-      video.pause();
-
-    });
-
-    // Activar sonido
-    boton.addEventListener("click", function () {
-
-      video.muted = false;
-      video.volume = 1;
-
-      video.play();
-
-      boton.innerHTML = "🔇 SILENCIAR";
-
-    });
-
   </script>
 
 </body>
