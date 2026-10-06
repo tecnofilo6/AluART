@@ -36,11 +36,14 @@ html, body {
 #mensaje {
     position: fixed;
     top: 20px;
-    width: 100%;
+    left: 0;
+    right: 0;
     text-align: center;
     color: white;
-    font-family: Arial;
-    z-index: 10;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    z-index: 100;
+    padding: 10px;
 }
 
 </style>
@@ -49,9 +52,12 @@ html, body {
 
 <body>
 
-<div id="mensaje">Cargando AluARTmx AR...</div>
+<div id="mensaje">
+    Cargando AluARTmx AR...
+</div>
 
 <div id="container"></div>
+
 
 <script type="module">
 
@@ -63,95 +69,124 @@ import { MindARThree } from "mindar-image-three";
 const mensaje = document.getElementById("mensaje");
 
 
-const mindarThree = new MindARThree({
-
-    container: document.getElementById("container"),
-
-    imageTargetSrc: "./targets.mind"
-
-});
-
-
-const { renderer, scene, camera } = mindarThree;
-
-
-const video = document.createElement("video");
-
-video.src = "./10megas.mp4";
-
-video.loop = true;
-
-video.muted = true;
-
-video.playsInline = true;
-
-video.setAttribute("webkit-playsinline", "true");
-
-
-const texture = new THREE.VideoTexture(video);
-
-
-const geometry = new THREE.PlaneGeometry(1, 0.5625);
-
-
-const material = new THREE.MeshBasicMaterial({
-
-    map: texture
-
-});
-
-
-const plane = new THREE.Mesh(
-
-    geometry,
-
-    material
-
-);
-
-
-const anchor = mindarThree.addAnchor(0);
-
-anchor.group.add(plane);
-
-
-anchor.onTargetFound = () => {
-
-    mensaje.innerText = "¡CUADRO DETECTADO!";
-
-    video.play();
-
-};
-
-
-anchor.onTargetLost = () => {
-
-    mensaje.innerText = "Apunta al cuadro";
-
-    video.pause();
-
-};
-
-
-async function iniciar() {
+async function iniciarAR() {
 
     try {
 
+        mensaje.innerText = "Cargando MindAR...";
+
+
+        const mindarThree = new MindARThree({
+
+            container: document.getElementById("container"),
+
+            imageTargetSrc: "./targets.mind"
+
+        });
+
+
+        mensaje.innerText = "MindAR cargado. Preparando cámara...";
+
+
+        const { renderer, scene, camera } = mindarThree;
+
+
+        // VIDEO
+
+        const video = document.createElement("video");
+
+        video.src = "./10megas.mp4";
+
+        video.loop = true;
+
+        video.muted = true;
+
+        video.playsInline = true;
+
+        video.setAttribute(
+            "webkit-playsinline",
+            "true"
+        );
+
+
+        const texture = new THREE.VideoTexture(video);
+
+
+        const geometry = new THREE.PlaneGeometry(
+            1,
+            0.5625
+        );
+
+
+        const material = new THREE.MeshBasicMaterial({
+
+            map: texture
+
+        });
+
+
+        const plane = new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+        // TARGET
+
+        const anchor = mindarThree.addAnchor(0);
+
+        anchor.group.add(plane);
+
+
+        anchor.onTargetFound = () => {
+
+            mensaje.innerText =
+                "¡CUADRO DETECTADO!";
+
+            video.play();
+
+        };
+
+
+        anchor.onTargetLost = () => {
+
+            mensaje.innerText =
+                "Apunta al cuadro";
+
+            video.pause();
+
+        };
+
+
+        // INICIAR AR
+
+        mensaje.innerText =
+            "Intentando iniciar cámara...";
+
+
         await mindarThree.start();
 
-        mensaje.innerText = "Apunta la cámara al cuadro";
+
+        mensaje.innerText =
+            "CÁMARA INICIADA - APUNTA AL CUADRO";
+
 
         renderer.setAnimationLoop(() => {
 
-            renderer.render(scene, camera);
+            renderer.render(
+                scene,
+                camera
+            );
 
         });
+
 
     }
 
     catch (error) {
 
-        mensaje.innerText = "ERROR: " + error.message;
+        mensaje.innerText =
+            "ERROR: " + error.message;
 
         console.error(error);
 
@@ -160,7 +195,7 @@ async function iniciar() {
 }
 
 
-iniciar();
+iniciarAR();
 
 </script>
 
