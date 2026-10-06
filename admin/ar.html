@@ -4,200 +4,217 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>AluARTmx AR</title>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
-  }
-}
-</script>
+
+<!-- A-FRAME -->
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+
+<!-- MINDAR -->
+
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
 
 <style>
 
-html, body {
+body {
     margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
     overflow: hidden;
-    background: black;
-}
-
-#container {
-    width: 100vw;
-    height: 100vh;
 }
 
 #mensaje {
+
     position: fixed;
-    top: 20px;
+
+    top: 15px;
+
     left: 0;
+
     right: 0;
+
     text-align: center;
+
     color: white;
-    font-family: Arial, sans-serif;
-    font-size: 20px;
-    z-index: 100;
-    padding: 10px;
+
+    font-family: Arial;
+
+    font-size: 18px;
+
+    z-index: 9999;
+
+    text-shadow:
+        0 0 5px black,
+        0 0 5px black;
+
 }
 
 </style>
 
 </head>
 
+
 <body>
 
+
 <div id="mensaje">
-    Cargando AluARTmx AR...
+
+Cargando AluARTmx AR...
+
 </div>
 
-<div id="container"></div>
+
+<a-scene
+
+    mindar-image="
+        imageTargetSrc: ./targets.mind;
+        maxTrack: 1;
+    "
+
+    color-space="sRGB"
+
+    renderer="
+        colorManagement: true;
+        physicallyCorrectLights;
+    "
+
+    vr-mode-ui="enabled: false"
+
+    device-orientation-permission-ui="
+        enabled: false
+    "
+
+    embedded
+>
 
 
-<script type="module">
+    <!-- CÁMARA -->
 
-import * as THREE from "three";
+    <a-camera
 
-import { MindARThree } from "mindar-image-three";
+        position="0 0 0"
 
+        look-controls="enabled: false"
 
-const mensaje = document.getElementById("mensaje");
+        active="true"
 
-
-async function iniciarAR() {
-
-    try {
-
-        mensaje.innerText = "Cargando MindAR...";
+    ></a-camera>
 
 
-        const mindarThree = new MindARThree({
+    <!-- VIDEO -->
 
-            container: document.getElementById("container"),
+    <a-assets>
 
-            imageTargetSrc: "./targets.mind"
+        <video
 
-        });
+            id="videoAR"
 
+            src="./10megas.mp4"
 
-        mensaje.innerText = "MindAR cargado. Preparando cámara...";
+            loop
 
+            crossorigin="anonymous"
 
-        const { renderer, scene, camera } = mindarThree;
+            playsinline
 
+            webkit-playsinline
 
-        // VIDEO
+            muted
 
-        const video = document.createElement("video");
+        ></video>
 
-        video.src = "./10megas.mp4";
-
-        video.loop = true;
-
-        video.muted = true;
-
-        video.playsInline = true;
-
-        video.setAttribute(
-            "webkit-playsinline",
-            "true"
-        );
+    </a-assets>
 
 
-        const texture = new THREE.VideoTexture(video);
+    <!-- TARGET -->
+
+    <a-entity
+
+        mindar-image-target="
+            targetIndex: 0
+        "
+
+    >
+
+        <a-video
+
+            src="#videoAR"
+
+            position="0 0 0"
+
+            width="1"
+
+            height="0.5625"
+
+            rotation="0 0 0"
+
+        ></a-video>
+
+    </a-entity>
 
 
-        const geometry = new THREE.PlaneGeometry(
-            1,
-            0.5625
-        );
+</a-scene>
 
 
-        const material = new THREE.MeshBasicMaterial({
-
-            map: texture
-
-        });
+<script>
 
 
-        const plane = new THREE.Mesh(
-            geometry,
-            material
-        );
+const mensaje =
+    document.getElementById("mensaje");
 
 
-        // TARGET
-
-        const anchor = mindarThree.addAnchor(0);
-
-        anchor.group.add(plane);
+const escena =
+    document.querySelector("a-scene");
 
 
-        anchor.onTargetFound = () => {
-
-            mensaje.innerText =
-                "¡CUADRO DETECTADO!";
-
-            video.play();
-
-        };
+const video =
+    document.getElementById("videoAR");
 
 
-        anchor.onTargetLost = () => {
-
-            mensaje.innerText =
-                "Apunta al cuadro";
-
-            video.pause();
-
-        };
-
-
-        // INICIAR AR
+escena.addEventListener(
+    "loaded",
+    function () {
 
         mensaje.innerText =
-            "Intentando iniciar cámara...";
-
-
-        await mindarThree.start();
-
-
-        mensaje.innerText =
-            "CÁMARA INICIADA - APUNTA AL CUADRO";
-
-
-        renderer.setAnimationLoop(() => {
-
-            renderer.render(
-                scene,
-                camera
-            );
-
-        });
-
+            "Cámara lista. Apunta al cuadro.";
 
     }
+);
 
-    catch (error) {
+
+escena.addEventListener(
+    "targetFound",
+    function () {
 
         mensaje.innerText =
-            "ERROR: " + error.message;
+            "¡CUADRO DETECTADO!";
 
-        console.error(error);
+        video.play();
 
     }
+);
 
-}
 
+escena.addEventListener(
+    "targetLost",
+    function () {
 
-iniciarAR();
+        mensaje.innerText =
+            "Apunta al cuadro.";
+
+        video.pause();
+
+    }
+);
+
 
 </script>
+
 
 </body>
 
