@@ -1,63 +1,15 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AluARTmx AR</title>
-
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-      padding-top: 50px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>PRUEBA ALUART</title>
 </head>
 
-<body>
+<body style="background:red; color:white; text-align:center;">
 
-<h1>AluARTmx AR</h1>
+<h1>PRUEBA ALUART FUNCIONANDO</h1>
 
-<p>Prueba de cámara</p>
-
-<button onclick="iniciarCamara()">
-  ACTIVAR CÁMARA
-</button>
-
-<video id="camara"
-       autoplay
-       playsinline
-       style="width:100%; margin-top:20px;">
-</video>
-
-<script>
-
-async function iniciarCamara() {
-
-  try {
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "environment"
-      },
-      audio: false
-    });
-
-    document.getElementById("camara").srcObject = stream;
-
-  } catch (error) {
-
-    document.body.innerHTML +=
-      "<p style='color:red'>ERROR: " + error.message + "</p>";
-
-  }
-
-}
-
-</script>
+<p>Si ves esta pantalla ROJA, estamos editando el archivo correcto.</p>
 
 </body>
 </html>
