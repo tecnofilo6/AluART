@@ -7,166 +7,40 @@
 
 <title>AluARTmx AR</title>
 
-<!-- A-FRAME -->
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-<!-- MINDAR -->
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-<style>
-
-body {
-    margin: 0;
-    overflow: hidden;
-}
-
-#mensaje {
-    position: fixed;
-    top: 15px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    color: white;
-    font-family: Arial, sans-serif;
-    font-size: 20px;
-    z-index: 9999;
-    text-shadow: 0 0 5px black;
-}
-
-</style>
 
 </head>
 
 <body>
 
-<div id="mensaje">
-    Cargando AluARTmx AR...
-</div>
-
-
 <a-scene
-
-    mindar-image="
-        imageTargetSrc: ./targets.mind;
-    "
-
-    color-space="sRGB"
-
-    renderer="
-        colorManagement: true;
-        physicallyCorrectLights;
-    "
-
+    mindar-image="imageTargetSrc: ./targets.mind;"
     vr-mode-ui="enabled: false"
-
     device-orientation-permission-ui="enabled: false"
 >
-
-
-    <a-assets>
-
-        <video
-            id="videoAR"
-            src="./10megas.mp4"
-            loop
-            muted
-            playsinline
-            webkit-playsinline
-            crossorigin="anonymous">
-        </video>
-
-    </a-assets>
-
 
     <a-camera
         position="0 0 0"
         look-controls="enabled: false">
     </a-camera>
 
-
     <a-entity
-        id="target"
-        mindar-image-target="targetIndex: 0"
-    >
+        mindar-image-target="targetIndex: 0">
 
-        <a-video
-            id="videoPlano"
-            src="#videoAR"
+        <a-plane
+            color="blue"
+            opacity="0.5"
             position="0 0 0"
+            height="0.552"
             width="1"
-            height="0.5625"
-        >
-        </a-video>
+            rotation="0 0 0">
+        </a-plane>
 
     </a-entity>
 
-
 </a-scene>
-
-
-<script>
-
-const escena = document.querySelector("a-scene");
-
-const target = document.querySelector("#target");
-
-const video = document.querySelector("#videoAR");
-
-const mensaje = document.querySelector("#mensaje");
-
-
-// MINDAR LISTO
-
-escena.addEventListener("arReady", () => {
-
-    console.log("MindAR listo");
-
-    mensaje.innerText =
-        "CÁMARA LISTA - APUNTA AL CUADRO";
-
-});
-
-
-// ERROR
-
-escena.addEventListener("arError", () => {
-
-    console.log("Error iniciando MindAR");
-
-    mensaje.innerText =
-        "ERROR AL INICIAR LA CÁMARA";
-
-});
-
-
-// CUADRO ENCONTRADO
-
-target.addEventListener("targetFound", () => {
-
-    console.log("CUADRO ENCONTRADO");
-
-    mensaje.innerText =
-        "¡CUADRO DETECTADO!";
-
-    video.play();
-
-});
-
-
-// CUADRO PERDIDO
-
-target.addEventListener("targetLost", () => {
-
-    console.log("CUADRO PERDIDO");
-
-    mensaje.innerText =
-        "APUNTA AL CUADRO";
-
-    video.pause();
-
-});
-
-</script>
 
 </body>
 
