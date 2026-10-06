@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AluARTmx AR</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+</head>
+
+<body style="margin:0; overflow:hidden;">
+
+  <div id="ar-container"></div>
+
+  <script>
+    const start = async () => {
+
+      const mindarThree = new MindARThree({
+        container: document.querySelector("#ar-container"),
+        imageTargetSrc: "./targets.mind"
+      });
+
+      const { renderer, scene, camera } = mindarThree;
+
+      const video = document.createElement("video");
+
+      video.src = "../video.mp4";
+      video.crossOrigin = "anonymous";
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+
+      const texture = new THREE.VideoTexture(video);
+
+      const geometry = new THREE.PlaneGeometry(1, 0.5625);
+
+      const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true
+      });
+
+      const plane = new THREE.Mesh(geometry, material);
+
+      const anchor = mindarThree.addAnchor(0);
+
+      anchor.group.add(plane);
+
+      anchor.onTargetFound = () => {
+        video.play();
+      };
+
+      anchor.onTargetLost = () => {
+        video.pause();
+      };
+
+      await mindarThree.start();
+
+      renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+      });
+    };
+
+    start();
+  </script>
+
+</body>
+</html>
