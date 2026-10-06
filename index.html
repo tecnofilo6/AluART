@@ -11,6 +11,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 /* ================================
@@ -209,7 +211,9 @@ label{
     margin:17px 0 7px;
 }
 
-input{
+input[type="text"],
+input[type="url"],
+input[type="file"]{
     width:100%;
     padding:13px 14px;
     border-radius:10px;
@@ -228,6 +232,67 @@ input:focus{
 
 input::placeholder{
     color:#565d65;
+}
+
+input[type="file"]{
+    padding:10px;
+    cursor:pointer;
+}
+
+
+/* ================================
+   FILE INFO
+================================ */
+
+.file-info{
+    margin-top:7px;
+    color:#626a73;
+    font-size:11px;
+    line-height:1.5;
+    word-break:break-word;
+}
+
+.file-ok{
+    color:#22c55e;
+}
+
+.file-error{
+    color:#ef4444;
+}
+
+
+/* ================================
+   PROGRESO
+================================ */
+
+.progress-box{
+    display:none;
+    margin-top:18px;
+    padding:13px;
+    border-radius:10px;
+    background:#0b0d10;
+    border:1px solid #252a30;
+}
+
+.progress-text{
+    color:#c9cdd2;
+    font-size:12px;
+    margin-bottom:9px;
+}
+
+.progress-bar{
+    width:100%;
+    height:7px;
+    background:#252a30;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    width:0%;
+    height:100%;
+    background:#fff;
+    transition:width .2s;
 }
 
 
@@ -273,6 +338,12 @@ button{
 
 button:hover{
     transform:translateY(-1px);
+}
+
+button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+    transform:none;
 }
 
 .primary{
@@ -352,6 +423,13 @@ button:hover{
     color:#626a73;
     font-size:11px;
     margin-top:10px;
+    word-break:break-all;
+}
+
+.project-target{
+    color:#626a73;
+    font-size:11px;
+    margin-top:6px;
     word-break:break-all;
 }
 
@@ -545,10 +623,6 @@ button:hover{
 <body>
 
 
-<!-- =================================
-     HEADER
-================================= -->
-
 <header>
 
 <div class="logo">
@@ -587,10 +661,6 @@ Sistema activo
 <main>
 
 
-<!-- =================================
-     TITULO
-================================= -->
-
 <div class="hero">
 
 <h1>
@@ -604,10 +674,6 @@ Crea, administra y genera los QR de tus cuadros AluARTmx.
 </div>
 
 
-
-<!-- =================================
-     ESTADISTICAS
-================================= -->
 
 <div class="stats">
 
@@ -659,16 +725,8 @@ Sistema
 
 
 
-<!-- =================================
-     GRID
-================================= -->
-
 <div class="grid">
 
-
-<!-- =================================
-     NUEVO CUADRO
-================================= -->
 
 <section class="card">
 
@@ -681,7 +739,7 @@ Nuevo cuadro
 </div>
 
 <p class="note">
-Registra un cuadro y genera automáticamente su experiencia AR y código QR.
+Sube el target AR y el video. AluARTmx generará automáticamente la experiencia y el QR.
 </p>
 
 
@@ -691,8 +749,8 @@ ID del cuadro
 
 <input
 id="id"
-placeholder="Ejemplo: 001"
-oninput="actualizarURL()"
+type="text"
+readonly
 >
 
 
@@ -702,8 +760,47 @@ Nombre / cliente
 
 <input
 id="name"
+type="text"
 placeholder="Ejemplo: Familia Pérez"
 >
+
+
+<label>
+Target AR (.mind)
+</label>
+
+<input
+id="mindFile"
+type="file"
+accept=".mind"
+onchange="mostrarArchivoMind()"
+>
+
+<div
+id="mindInfo"
+class="file-info"
+>
+Selecciona el archivo .mind correspondiente al cuadro.
+</div>
+
+
+<label>
+Video
+</label>
+
+<input
+id="videoFile"
+type="file"
+accept="video/*"
+onchange="mostrarArchivoVideo()"
+>
+
+<div
+id="videoInfo"
+class="file-info"
+>
+Selecciona el video que aparecerá sobre el cuadro.
+</div>
 
 
 <div class="ar-url-box">
@@ -716,38 +813,50 @@ Experiencia AR generada automáticamente
 class="ar-url"
 id="arPreview"
 >
-Escribe primero el ID del cuadro.
+Esperando datos del cuadro...
 </div>
 
 </div>
 
 
-<label>
-Video
-</label>
-
-<input
-id="video"
-placeholder="Pega aquí el enlace del video"
+<div
+id="progressBox"
+class="progress-box"
 >
+
+<div
+id="progressText"
+class="progress-text"
+>
+Preparando...
+</div>
+
+<div class="progress-bar">
+
+<div
+id="progressFill"
+class="progress-fill"
+>
+</div>
+
+</div>
+
+</div>
 
 
 <button
+id="createButton"
 class="primary"
 onclick="createProject()"
 >
 
-＋ Crear cuadro y generar QR
+＋ Subir archivos y crear cuadro
 
 </button>
 
 </section>
 
 
-
-<!-- =================================
-     MIS CUADROS
-================================= -->
 
 <section class="card">
 
@@ -777,10 +886,6 @@ id="counter"
 </main>
 
 
-
-<!-- =================================
-     MODAL QR
-================================= -->
 
 <div id="qrModal">
 
@@ -853,16 +958,35 @@ Cerrar
 
 
 /* =================================
-   CONFIGURACIÓN
+   SUPABASE
+================================= */
+
+const SUPABASE_URL =
+'https://fqqtztgqlijlxyesbaqz.supabase.co';
+
+
+const SUPABASE_KEY =
+'sb_publishable_ehoCG0dQDrMlAG6j7UpyZA_gLiChk-9';
+
+
+const supabaseClient =
+supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+const STORAGE_BUCKET =
+'AluART';
+
+
+/* =================================
+   CONFIGURACIÓN LOCAL
 ================================= */
 
 const KEY =
 'aluartmx_projects_v3';
 
-
-/*
-   URL BASE DE TU SISTEMA AR
-*/
 
 const AR_BASE =
 'https://tecnofilo6.github.io/AluART/admin/ar.html';
@@ -877,9 +1001,19 @@ let currentQR = null;
 
 function projects(){
 
-    return JSON.parse(
-        localStorage.getItem(KEY) || '[]'
-    );
+    try{
+
+        return JSON.parse(
+            localStorage.getItem(KEY) || '[]'
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+        return [];
+
+    }
 
 }
 
@@ -899,6 +1033,70 @@ function save(a){
 
 
 /* =================================
+   GENERAR ID AUTOMÁTICO
+================================= */
+
+function generarNuevoID(){
+
+    const a = projects();
+
+    let max = 0;
+
+    a.forEach(function(p){
+
+        const numero =
+            parseInt(
+                String(p.id || '')
+                .replace(/\D/g,''),
+                10
+            );
+
+        if(
+            !isNaN(numero) &&
+            numero > max
+        ){
+
+            max = numero;
+
+        }
+
+    });
+
+
+    const siguiente =
+        max + 1;
+
+
+    return String(
+        siguiente
+    ).padStart(3,'0');
+
+}
+
+
+/* =================================
+   PREPARAR NUEVO FORMULARIO
+================================= */
+
+function prepararFormulario(){
+
+    document.querySelector(
+        '#id'
+    ).value =
+        generarNuevoID();
+
+
+    document.querySelector(
+        '#arPreview'
+    ).textContent =
+        generarARUrl(
+            document.querySelector('#id').value
+        );
+
+}
+
+
+/* =================================
    GENERAR URL AR
 ================================= */
 
@@ -912,33 +1110,266 @@ function generarARUrl(id){
 
 
 /* =================================
-   MOSTRAR URL AR EN FORMULARIO
+   MOSTRAR ARCHIVO MIND
 ================================= */
 
-function actualizarURL(){
+function mostrarArchivoMind(){
 
-    const id =
-        document.querySelector('#id')
-        .value
-        .trim();
-
-
-    const preview =
-        document.querySelector('#arPreview');
+    const input =
+        document.querySelector(
+            '#mindFile'
+        );
 
 
-    if(!id){
+    const info =
+        document.querySelector(
+            '#mindInfo'
+        );
 
-        preview.textContent =
-            'Escribe primero el ID del cuadro.';
+
+    if(!input.files.length){
+
+        info.textContent =
+            'Selecciona el archivo .mind correspondiente al cuadro.';
+
+        info.className =
+            'file-info';
 
         return;
 
     }
 
 
-    preview.textContent =
-        generarARUrl(id);
+    const file =
+        input.files[0];
+
+
+    if(
+        !file.name
+        .toLowerCase()
+        .endsWith('.mind')
+    ){
+
+        info.textContent =
+            '❌ El archivo debe terminar en .mind';
+
+        info.className =
+            'file-info file-error';
+
+        input.value = '';
+
+        return;
+
+    }
+
+
+    info.textContent =
+        '✓ ' +
+        file.name +
+        ' • ' +
+        formatBytes(file.size);
+
+
+    info.className =
+        'file-info file-ok';
+
+}
+
+
+/* =================================
+   MOSTRAR ARCHIVO VIDEO
+================================= */
+
+function mostrarArchivoVideo(){
+
+    const input =
+        document.querySelector(
+            '#videoFile'
+        );
+
+
+    const info =
+        document.querySelector(
+            '#videoInfo'
+        );
+
+
+    if(!input.files.length){
+
+        info.textContent =
+            'Selecciona el video que aparecerá sobre el cuadro.';
+
+        info.className =
+            'file-info';
+
+        return;
+
+    }
+
+
+    const file =
+        input.files[0];
+
+
+    if(
+        !file.type.startsWith('video/')
+    ){
+
+        info.textContent =
+            '❌ Selecciona un archivo de video válido.';
+
+        info.className =
+            'file-info file-error';
+
+        input.value = '';
+
+        return;
+
+    }
+
+
+    if(
+        file.size >
+        50 * 1024 * 1024
+    ){
+
+        info.textContent =
+            '❌ El video supera el límite actual de 50 MB.';
+
+        info.className =
+            'file-info file-error';
+
+        input.value = '';
+
+        return;
+
+    }
+
+
+    info.textContent =
+        '✓ ' +
+        file.name +
+        ' • ' +
+        formatBytes(file.size);
+
+
+    info.className =
+        'file-info file-ok';
+
+}
+
+
+/* =================================
+   FORMATEAR TAMAÑO
+================================= */
+
+function formatBytes(bytes){
+
+    if(!bytes){
+
+        return '0 B';
+
+    }
+
+
+    const units =
+        ['B','KB','MB','GB'];
+
+
+    const i =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
+
+
+    return (
+        bytes /
+        Math.pow(1024,i)
+    ).toFixed(
+        i === 0 ? 0 : 1
+    )
+    + ' '
+    + units[i];
+
+}
+
+
+/* =================================
+   PROGRESO
+================================= */
+
+function mostrarProgreso(texto, porcentaje){
+
+    document.querySelector(
+        '#progressBox'
+    ).style.display =
+        'block';
+
+
+    document.querySelector(
+        '#progressText'
+    ).textContent =
+        texto;
+
+
+    document.querySelector(
+        '#progressFill'
+    ).style.width =
+        porcentaje + '%';
+
+}
+
+
+/* =================================
+   OCULTAR PROGRESO
+================================= */
+
+function ocultarProgreso(){
+
+    document.querySelector(
+        '#progressBox'
+    ).style.display =
+        'none';
+
+}
+
+
+/* =================================
+   SUBIR ARCHIVO A SUPABASE
+================================ */
+
+async function subirArchivo(file, path){
+
+    const resultado =
+        await supabaseClient
+        .storage
+        .from(STORAGE_BUCKET)
+        .upload(
+            path,
+            file,
+            {
+                cacheControl:'3600',
+                upsert:true
+            }
+        );
+
+
+    if(resultado.error){
+
+        throw resultado.error;
+
+    }
+
+
+    const publicData =
+        supabaseClient
+        .storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(path);
+
+
+    return publicData.data.publicUrl;
 
 }
 
@@ -947,30 +1378,36 @@ function actualizarURL(){
    CREAR CUADRO
 ================================= */
 
-function createProject(){
+async function createProject(){
 
     const id =
-        document.querySelector('#id')
-        .value
-        .trim();
+        document.querySelector(
+            '#id'
+        ).value.trim();
 
 
     const name =
-        document.querySelector('#name')
-        .value
-        .trim();
+        document.querySelector(
+            '#name'
+        ).value.trim();
 
 
-    const video =
-        document.querySelector('#video')
-        .value
-        .trim();
+    const mindInput =
+        document.querySelector(
+            '#mindFile'
+        );
+
+
+    const videoInput =
+        document.querySelector(
+            '#videoFile'
+        );
 
 
     if(!id){
 
         alert(
-            'Escribe el ID del cuadro.'
+            'No se pudo generar el ID.'
         );
 
         return;
@@ -978,10 +1415,10 @@ function createProject(){
     }
 
 
-    if(!video){
+    if(!mindInput.files.length){
 
         alert(
-            'Pega el enlace del VIDEO.'
+            'Selecciona el archivo .mind del cuadro.'
         );
 
         return;
@@ -989,78 +1426,321 @@ function createProject(){
     }
 
 
-    /*
-       GENERAMOS AUTOMÁTICAMENTE
-       LA URL DE LA EXPERIENCIA AR
-    */
+    if(!videoInput.files.length){
 
-    const url =
-        generarARUrl(id);
+        alert(
+            'Selecciona el video del cuadro.'
+        );
 
+        return;
 
-    let a =
-        projects();
+    }
 
 
-    /*
-       Si ya existe el ID,
-       lo reemplazamos.
-    */
+    const mindFile =
+        mindInput.files[0];
 
-    a =
-        a.filter(
-            x => x.id !== id
+
+    const videoFile =
+        videoInput.files[0];
+
+
+    if(
+        !mindFile.name
+        .toLowerCase()
+        .endsWith('.mind')
+    ){
+
+        alert(
+            'El archivo Target debe ser .mind'
+        );
+
+        return;
+
+    }
+
+
+    if(
+        !videoFile.type.startsWith('video/')
+    ){
+
+        alert(
+            'Selecciona un video válido.'
+        );
+
+        return;
+
+    }
+
+
+    if(
+        videoFile.size >
+        50 * 1024 * 1024
+    ){
+
+        alert(
+            'El video supera el límite actual de 50 MB.'
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        document.querySelector(
+            '#createButton'
         );
 
 
-    /*
-       Guardamos el nuevo proyecto.
-    */
-
-    a.unshift({
-
-        id:id,
-
-        name:
-            name || 'Sin nombre',
-
-        url:url,
-
-        video:video,
-
-        created:
-            new Date().toISOString()
-
-    });
+    button.disabled =
+        true;
 
 
-    save(a);
+    try{
+
+        /* =========================
+           SUBIR MIND
+        ========================= */
+
+        mostrarProgreso(
+            'Subiendo target AR...',
+            10
+        );
 
 
-    /*
-       Mostrar QR de la experiencia AR.
-    */
-
-    showQR(
-        a[0]
-    );
+        const mindPath =
+            'targets/'
+            + id
+            + '.mind';
 
 
-    render();
+        const mindUrl =
+            await subirArchivo(
+                mindFile,
+                mindPath
+            );
 
 
-    /*
-       Limpiar formulario.
-    */
+        mostrarProgreso(
+            'Target AR subido correctamente.',
+            50
+        );
 
-    document.querySelector('#id').value = '';
 
-    document.querySelector('#name').value = '';
+        /* =========================
+           SUBIR VIDEO
+        ========================= */
 
-    document.querySelector('#video').value = '';
+        mostrarProgreso(
+            'Subiendo video...',
+            60
+        );
 
-    document.querySelector('#arPreview').textContent =
-        'Escribe primero el ID del cuadro.';
+
+        const extension =
+            obtenerExtension(
+                videoFile.name
+            );
+
+
+        const videoPath =
+            'videos/'
+            + id
+            + '.'
+            + extension;
+
+
+        const videoUrl =
+            await subirArchivo(
+                videoFile,
+                videoPath
+            );
+
+
+        mostrarProgreso(
+            'Video subido correctamente.',
+            85
+        );
+
+
+        /* =========================
+           URL AR
+        ========================= */
+
+        const url =
+            generarARUrl(id);
+
+
+        /* =========================
+           GUARDAR PROYECTO
+        ========================= */
+
+        let a =
+            projects();
+
+
+        a =
+            a.filter(
+                x => x.id !== id
+            );
+
+
+        const nuevoProyecto = {
+
+            id:id,
+
+            name:
+                name ||
+                'Sin nombre',
+
+            url:url,
+
+            video:videoUrl,
+
+            target:mindUrl,
+
+            videoFile:
+                videoPath,
+
+            targetFile:
+                mindPath,
+
+            created:
+                new Date().toISOString()
+
+        };
+
+
+        a.unshift(
+            nuevoProyecto
+        );
+
+
+        save(a);
+
+
+        mostrarProgreso(
+            '¡Cuadro creado correctamente!',
+            100
+        );
+
+
+        render();
+
+
+        showQR(
+            nuevoProyecto
+        );
+
+
+        /* =========================
+           LIMPIAR
+        ========================= */
+
+        document.querySelector(
+            '#name'
+        ).value = '';
+
+
+        document.querySelector(
+            '#mindFile'
+        ).value = '';
+
+
+        document.querySelector(
+            '#videoFile'
+        ).value = '';
+
+
+        document.querySelector(
+            '#mindInfo'
+        ).textContent =
+            'Selecciona el archivo .mind correspondiente al cuadro.';
+
+
+        document.querySelector(
+            '#mindInfo'
+        ).className =
+            'file-info';
+
+
+        document.querySelector(
+            '#videoInfo'
+        ).textContent =
+            'Selecciona el video que aparecerá sobre el cuadro.';
+
+
+        document.querySelector(
+            '#videoInfo'
+        ).className =
+            'file-info';
+
+
+        prepararFormulario();
+
+
+        setTimeout(
+            ocultarProgreso,
+            1200
+        );
+
+
+    }catch(error){
+
+        console.error(
+            'ERROR SUPABASE:',
+            error
+        );
+
+
+        alert(
+            'No se pudo subir el archivo.\n\n'
+            + (
+                error.message ||
+                'Error desconocido'
+            )
+        );
+
+
+        ocultarProgreso();
+
+    }finally{
+
+        button.disabled =
+            false;
+
+    }
+
+}
+
+
+/* =================================
+   OBTENER EXTENSION
+================================= */
+
+function obtenerExtension(nombre){
+
+    const partes =
+        nombre.split('.');
+
+
+    if(
+        partes.length < 2
+    ){
+
+        return 'mp4';
+
+    }
+
+
+    return partes
+        .pop()
+        .toLowerCase()
+        .replace(
+            /[^a-z0-9]/g,
+            ''
+        );
 
 }
 
@@ -1071,7 +1751,8 @@ function createProject(){
 
 function showQR(p){
 
-    currentQR = p;
+    currentQR =
+        p;
 
 
     document.querySelector(
@@ -1079,12 +1760,6 @@ function showQR(p){
     ).textContent =
         `AluARTmx • ${p.id}`;
 
-
-    /*
-       IMPORTANTE:
-       EL QR AHORA CONTIENE
-       LA URL DE LA EXPERIENCIA AR.
-    */
 
     const destino =
         p.url;
@@ -1108,10 +1783,13 @@ function showQR(p){
 
 
     const q =
-        document.querySelector('#qr');
+        document.querySelector(
+            '#qr'
+        );
 
 
-    q.innerHTML = '';
+    q.innerHTML =
+        '';
 
 
     new QRCode(
@@ -1120,11 +1798,14 @@ function showQR(p){
 
         {
 
-            text:destino,
+            text:
+                destino,
 
-            width:220,
+            width:
+                220,
 
-            height:220,
+            height:
+                220,
 
             correctLevel:
                 QRCode.CorrectLevel.H
@@ -1218,6 +1899,19 @@ function closeQR(){
 
 function downloadQR(){
 
+    if(
+        !currentQR
+    ){
+
+        alert(
+            'No hay un QR seleccionado.'
+        );
+
+        return;
+
+    }
+
+
     const img =
         document.querySelector(
             '#qr img'
@@ -1236,7 +1930,9 @@ function downloadQR(){
 
 
     const a =
-        document.createElement('a');
+        document.createElement(
+            'a'
+        );
 
 
     a.href =
@@ -1259,20 +1955,27 @@ function downloadQR(){
 function removeProject(id){
 
     if(
-        confirm(
-            '¿Eliminar este cuadro del panel?'
+        !confirm(
+            '¿Eliminar este cuadro del panel?\n\nLos archivos de Supabase NO se eliminarán todavía.'
         )
     ){
 
-        save(
-            projects().filter(
-                x => x.id !== id
-            )
-        );
-
-        render();
+        return;
 
     }
+
+
+    save(
+        projects().filter(
+            x => x.id !== id
+        )
+    );
+
+
+    render();
+
+
+    prepararFormulario();
 
 }
 
@@ -1416,10 +2119,20 @@ function render(){
                 </div>
 
 
+                <div class="project-target">
+
+                    🎯 Target
+
+                    ${esc(p.target || p.targetFile || 'No disponible')}
+
+                </div>
+
+
                 <div class="project-video">
 
-                    🎬
-                    ${esc(p.video)}
+                    🎬 Video
+
+                    ${esc(p.video || 'No disponible')}
 
                 </div>
 
@@ -1484,6 +2197,8 @@ function render(){
 ================================= */
 
 render();
+
+prepararFormulario();
 
 
 </script>
