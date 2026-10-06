@@ -17,36 +17,25 @@
       background: black;
     }
 
-    #mensaje {
-      position: fixed;
-      top: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      background: rgba(0,0,0,0.75);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 25px;
-      font-family: Arial, sans-serif;
-      font-size: 15px;
-      text-align: center;
-    }
-
     #sonido {
       position: fixed;
       bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
+
       background: white;
       color: black;
+
       border: none;
-      padding: 14px 25px;
       border-radius: 30px;
+
+      padding: 14px 24px;
+
       font-family: Arial, sans-serif;
       font-size: 16px;
       font-weight: bold;
-      cursor: pointer;
+
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
 
@@ -58,10 +47,6 @@
 
 <body>
 
-  <div id="mensaje">
-    AluARTmx · Apunta la cámara hacia tu cuadro
-  </div>
-
   <button id="sonido" class="oculto">
     🔊 ACTIVAR SONIDO
   </button>
@@ -69,8 +54,7 @@
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind;"
     vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-    renderer="colorManagement: true; physicallyCorrectLights: true">
+    device-orientation-permission-ui="enabled: false">
 
     <a-assets>
 
@@ -97,10 +81,7 @@
         src="#videoAR"
         position="0 0 0"
         width="1"
-        height="0.5625"
-        rotation="0 0 0"
-        autoplay
-        loop>
+        height="0.5625">
       </a-video>
 
     </a-entity>
@@ -109,41 +90,55 @@
 
   <script>
 
-    const video = document.querySelector("#videoAR");
-    const botonSonido = document.querySelector("#sonido");
-    const mensaje = document.querySelector("#mensaje");
+    const video = document.getElementById("videoAR");
+    const boton = document.getElementById("sonido");
 
-    // Intentar iniciar el video automáticamente
-    video.addEventListener("loadeddata", function () {
+    // Cuando MindAR encuentra el cuadro
+    const target = document.querySelector("[mindar-image-target]");
 
-      video.play().catch(function () {
-        console.log("Reproducción automática bloqueada.");
+    target.addEventListener("targetFound", function () {
+
+      console.log("Cuadro encontrado");
+
+      // Reproducir automáticamente sin sonido
+      video.muted = true;
+
+      video.play().then(function () {
+
+        // Mostrar botón para activar sonido
+        boton.classList.remove("oculto");
+
+      }).catch(function(error) {
+
+        console.log("Error reproduciendo video:", error);
+
       });
 
     });
 
-    // Activar sonido cuando el usuario toca el botón
-    botonSonido.addEventListener("click", function () {
+    // Cuando se pierde el cuadro
+    target.addEventListener("targetLost", function () {
+
+      console.log("Cuadro perdido");
+
+      video.pause();
+
+    });
+
+    // Activar sonido
+    boton.addEventListener("click", function () {
 
       video.muted = false;
       video.volume = 1;
 
-      video.play().then(function () {
+      video.play();
 
-        botonSonido.classList.add("oculto");
-        mensaje.innerHTML = "🔊 Sonido activado";
-
-        setTimeout(function () {
-          mensaje.style.display = "none";
-        }, 2000);
-
-      }).catch(function (error) {
-
-        console.log("No se pudo activar el sonido:", error);
-
-      });
+      boton.innerHTML = "🔇 SILENCIAR";
 
     });
 
-    // Cuando el usuario toca la pantalla,
-    // también intentamos activar el sonido
+  </script>
+
+</body>
+</html>
+```
