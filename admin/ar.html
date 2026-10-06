@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -70,7 +71,7 @@ body {
 </div>
 
 <button id="botonSonido">
-    🔊 ACTIVAR SONIDO
+    ▶️ REPRODUCIR VIDEO
 </button>
 
 <script>
@@ -99,11 +100,8 @@ body {
             "AluARTmx · Cargando cuadro " + id + "...";
 
         /*
-         * Creamos el HTML de A-Frame solamente DESPUÉS
-         * de conocer el target y el video.
-         *
-         * Esto evita el problema que tuvimos anteriormente
-         * al intentar cambiar MindAR después de iniciar.
+         * CREAMOS A-FRAME DESPUÉS DE CONOCER
+         * EL TARGET Y EL VIDEO.
          */
 
         const escena = document.createElement("a-scene");
@@ -141,7 +139,19 @@ body {
         video.preload = "auto";
         video.muted = true;
         video.playsInline = true;
-        video.setAttribute("webkit-playsinline", "");
+
+        video.setAttribute(
+            "webkit-playsinline",
+            ""
+        );
+
+        /*
+         * IMPORTANTE:
+         * Permitimos que el navegador prepare
+         * el video antes de intentar reproducirlo.
+         */
+
+        video.load();
 
         assets.appendChild(video);
 
@@ -207,8 +217,7 @@ body {
 
         /*
          * MUY IMPORTANTE:
-         * esta propiedad solucionó el problema
-         * que tuvimos con el video negro.
+         * evita que el video aparezca negro.
          */
 
         videoPlano.setAttribute(
@@ -230,11 +239,58 @@ body {
         document.body.appendChild(escena);
 
         /*
-         * EVENTOS
+         * BOTÓN
          */
 
         const boton =
             document.getElementById("botonSonido");
+
+        /*
+         * FUNCIÓN PARA REPRODUCIR
+         */
+
+        async function reproducirVideo() {
+
+            try {
+
+                video.muted = true;
+
+                await video.play();
+
+                document.getElementById(
+                    "mensaje"
+                ).innerHTML =
+                    "AluARTmx · Reproduciendo video";
+
+                boton.innerHTML =
+                    "🔊 ACTIVAR SONIDO";
+
+                console.log(
+                    "AluARTmx: VIDEO REPRODUCIENDO"
+                );
+
+                return true;
+
+            } catch(error) {
+
+                console.log(
+                    "AluARTmx: PLAY BLOQUEADO",
+                    error
+                );
+
+                document.getElementById(
+                    "mensaje"
+                ).innerHTML =
+                    "▶️ Toca REPRODUCIR VIDEO";
+
+                return false;
+            }
+
+        }
+
+        /*
+         * CUANDO SE DETECTA EL CUADRO
+         */
 
         target.addEventListener(
             "targetFound",
@@ -253,17 +309,18 @@ body {
                     id +
                     " detectado";
 
-                video.play().catch(function(error){
+                /*
+                 * Intento automático.
+                 */
 
-                    console.log(
-                        "Autoplay bloqueado:",
-                        error
-                    );
-
-                });
+                reproducirVideo();
 
             }
         );
+
+        /*
+         * CUANDO SE PIERDE EL CUADRO
+         */
 
         target.addEventListener(
             "targetLost",
@@ -280,29 +337,74 @@ body {
             }
         );
 
+        /*
+         * BOTÓN.
+         *
+         * Este click sí cuenta como interacción
+         * directa del usuario para el navegador.
+         */
+
         boton.addEventListener(
             "click",
-            function(){
+            async function(){
 
-                video.muted = false;
-                video.volume = 1;
+                try {
 
-                video.play().catch(
-                    function(error){
+                    video.muted = false;
+                    video.volume = 1;
+
+                    await video.play();
+
+                    boton.innerHTML =
+                        "🔊 SONIDO ACTIVADO";
+
+                    document.getElementById(
+                        "mensaje"
+                    ).innerHTML =
+                        "AluARTmx · Video reproduciendo";
+
+                    console.log(
+                        "AluARTmx: VIDEO INICIADO POR USUARIO"
+                    );
+
+                } catch(error) {
+
+                    console.log(
+                        "AluARTmx: ERROR AL REPRODUCIR",
+                        error
+                    );
+
+                    /*
+                     * Segundo intento:
+                     * reproducimos primero sin sonido.
+                     */
+
+                    try {
+
+                        video.muted = true;
+
+                        await video.play();
+
+                        boton.innerHTML =
+                            "🔊 ACTIVAR SONIDO";
+
+                    } catch(error2) {
 
                         console.log(
-                            "Error:",
-                            error
+                            "AluARTmx: SEGUNDO INTENTO FALLÓ",
+                            error2
                         );
 
                     }
-                );
 
-                boton.innerHTML =
-                    "🔊 SONIDO ACTIVADO";
+                }
 
             }
         );
+
+        /*
+         * SI EL VIDEO TERMINA
+         */
 
         video.addEventListener(
             "ended",
@@ -313,6 +415,24 @@ body {
                 );
 
                 video.pause();
+
+                boton.innerHTML =
+                    "▶️ REPRODUCIR VIDEO";
+
+            }
+        );
+
+        /*
+         * CUANDO EL VIDEO YA ESTÁ LISTO
+         */
+
+        video.addEventListener(
+            "canplay",
+            function(){
+
+                console.log(
+                    "AluARTmx: VIDEO LISTO PARA REPRODUCIR"
+                );
 
             }
         );
@@ -334,3 +454,4 @@ body {
 
 </body>
 </html>
+```
