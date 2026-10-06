@@ -3,23 +3,18 @@
 
 <head>
 
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>AluARTmx AR</title>
 
-
 <!-- A-FRAME -->
-
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
+<!-- MINDAR CORE -->
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
 
-<!-- MINDAR -->
-
+<!-- MINDAR A-FRAME -->
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
 
 <style>
 
@@ -29,43 +24,28 @@ body {
 }
 
 #mensaje {
-
     position: fixed;
-
     top: 15px;
-
     left: 0;
-
     right: 0;
-
     text-align: center;
-
     color: white;
-
-    font-family: Arial;
-
-    font-size: 18px;
-
+    font-family: Arial, sans-serif;
+    font-size: 20px;
     z-index: 9999;
-
     text-shadow:
         0 0 5px black,
         0 0 5px black;
-
 }
 
 </style>
 
 </head>
 
-
 <body>
 
-
 <div id="mensaje">
-
-Cargando AluARTmx AR...
-
+    Cargando AluARTmx AR...
 </div>
 
 
@@ -88,8 +68,6 @@ Cargando AluARTmx AR...
     device-orientation-permission-ui="
         enabled: false
     "
-
-    embedded
 >
 
 
@@ -100,8 +78,6 @@ Cargando AluARTmx AR...
         position="0 0 0"
 
         look-controls="enabled: false"
-
-        active="true"
 
     ></a-camera>
 
@@ -118,22 +94,24 @@ Cargando AluARTmx AR...
 
             loop
 
-            crossorigin="anonymous"
+            muted
 
             playsinline
 
             webkit-playsinline
 
-            muted
+            crossorigin="anonymous"
 
         ></video>
 
     </a-assets>
 
 
-    <!-- TARGET -->
+    <!-- CUADRO QUE MINDAR DEBE RECONOCER -->
 
     <a-entity
+
+        id="cuadro"
 
         mindar-image-target="
             targetIndex: 0
@@ -142,6 +120,8 @@ Cargando AluARTmx AR...
     >
 
         <a-video
+
+            id="videoPlano"
 
             src="#videoAR"
 
@@ -163,58 +143,82 @@ Cargando AluARTmx AR...
 
 <script>
 
-
-const mensaje =
-    document.getElementById("mensaje");
-
-
-const escena =
-    document.querySelector("a-scene");
-
-
-const video =
-    document.getElementById("videoAR");
-
-
-escena.addEventListener(
-    "loaded",
+document.addEventListener(
+    "DOMContentLoaded",
     function () {
 
-        mensaje.innerText =
-            "Cámara lista. Apunta al cuadro.";
+        const escena =
+            document.querySelector("a-scene");
+
+        const cuadro =
+            document.querySelector("#cuadro");
+
+        const video =
+            document.querySelector("#videoAR");
+
+        const mensaje =
+            document.querySelector("#mensaje");
+
+
+        // MINDAR LISTO
+
+        escena.addEventListener(
+            "arReady",
+            function () {
+
+                mensaje.innerText =
+                    "CÁMARA LISTA - APUNTA AL CUADRO";
+
+            }
+        );
+
+
+        // ERROR DE CÁMARA / AR
+
+        escena.addEventListener(
+            "arError",
+            function () {
+
+                mensaje.innerText =
+                    "ERROR AL INICIAR LA CÁMARA";
+
+            }
+        );
+
+
+        // CUADRO DETECTADO
+
+        cuadro.addEventListener(
+            "targetFound",
+            function () {
+
+                mensaje.innerText =
+                    "¡CUADRO DETECTADO!";
+
+                video.play();
+
+            }
+        );
+
+
+        // CUADRO PERDIDO
+
+        cuadro.addEventListener(
+            "targetLost",
+            function () {
+
+                mensaje.innerText =
+                    "APUNTA AL CUADRO";
+
+                video.pause();
+
+            }
+        );
 
     }
 );
-
-
-escena.addEventListener(
-    "targetFound",
-    function () {
-
-        mensaje.innerText =
-            "¡CUADRO DETECTADO!";
-
-        video.play();
-
-    }
-);
-
-
-escena.addEventListener(
-    "targetLost",
-    function () {
-
-        mensaje.innerText =
-            "Apunta al cuadro.";
-
-        video.pause();
-
-    }
-);
-
 
 </script>
-
 
 </body>
 
