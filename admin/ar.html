@@ -3,84 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>AluARTmx AR</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
-
   <style>
-    html, body {
+    body {
       margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
       background: black;
-    }
-
-    #ar-container {
-      width: 100%;
-      height: 100%;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+      padding-top: 50px;
     }
   </style>
 </head>
 
 <body>
 
-<div id="ar-container"></div>
+<h1>AluARTmx AR</h1>
+
+<p>Prueba de cámara</p>
+
+<button onclick="iniciarCamara()">
+  ACTIVAR CÁMARA
+</button>
+
+<video id="camara"
+       autoplay
+       playsinline
+       style="width:100%; margin-top:20px;">
+</video>
 
 <script>
 
-const start = async () => {
+async function iniciarCamara() {
 
-  const mindarThree = new MindARThree({
-    container: document.querySelector("#ar-container"),
-    imageTargetSrc: "./targets.mind"
-  });
+  try {
 
-  const { renderer, scene, camera } = mindarThree;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "environment"
+      },
+      audio: false
+    });
 
-  const video = document.createElement("video");
+    document.getElementById("camara").srcObject = stream;
 
-  video.src = "./10megas.mp4";
-  video.loop = true;
-  video.muted = true;
-  video.playsInline = true;
+  } catch (error) {
 
-  const texture = new THREE.VideoTexture(video);
+    document.body.innerHTML +=
+      "<p style='color:red'>ERROR: " + error.message + "</p>";
 
-  const geometry = new THREE.PlaneGeometry(1, 0.5625);
+  }
 
-  const material = new THREE.MeshBasicMaterial({
-    map: texture
-  });
-
-  const plane = new THREE.Mesh(
-    geometry,
-    material
-  );
-
-  const anchor = mindarThree.addAnchor(0);
-
-  anchor.group.add(plane);
-
-  anchor.onTargetFound = () => {
-    video.play();
-  };
-
-  anchor.onTargetLost = () => {
-    video.pause();
-  };
-
-  await mindarThree.start();
-
-  renderer.setAnimationLoop(() => {
-    renderer.render(scene, camera);
-  });
-
-};
-
-start();
+}
 
 </script>
 
