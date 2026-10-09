@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AluARTmx · Panel AR</title>
+<title>AluARTmx · Panel AR v2</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -258,8 +259,13 @@ button {
 
     <h2>➕ Crear nuevo cuadro</h2>
 
-    <label for="id">ID del cuadro</label>
+    <label for="id">ID único del cuadro</label>
     <input type="text" id="id" readonly>
+
+    <small>
+      El ID se genera automáticamente para evitar
+      conflictos con cuadros anteriores.
+    </small>
 
     <label for="nombre">Nombre / cliente</label>
     <input
@@ -311,9 +317,9 @@ button {
     >
 
     <small>
-      Selecciona la misma fotografía que imprimirás
-      en aluminio. Al crear el cuadro, el panel
-      generará automáticamente el archivo .mind.
+      Selecciona la fotografía que imprimirás
+      en aluminio. El panel generará automáticamente
+      el archivo .mind.
     </small>
 
     <label for="archivoMind">
@@ -647,29 +653,40 @@ function guardarProyectos(proyectos) {
 }
 
 // =====================================
-// GENERAR ID
+// GENERAR ID ÚNICO
 // =====================================
 
 function generarSiguienteId() {
 
-  const proyectos = obtenerProyectos();
-  let numeroMayor = 0;
+  // Cada cuadro recibe un identificador
+  // nuevo, incluso si se borraron pruebas.
 
-  proyectos.forEach(function(p) {
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === 'function'
+  ) {
+    return window.crypto.randomUUID();
+  }
 
-    const numero = parseInt(p.id, 10);
+  // Alternativa para navegadores antiguos.
+  const bytes = new Uint8Array(16);
+  window.crypto.getRandomValues(bytes);
 
-    if (
-      !isNaN(numero) &&
-      numero > numeroMayor
-    ) {
-      numeroMayor = numero;
-    }
-  });
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
 
-  return String(
-    numeroMayor + 1
-  ).padStart(3, '0');
+  const hex = Array.from(
+    bytes,
+    b => b.toString(16).padStart(2, '0')
+  );
+
+  return [
+    hex.slice(0, 4).join(''),
+    hex.slice(4, 6).join(''),
+    hex.slice(6, 8).join(''),
+    hex.slice(8, 10).join(''),
+    hex.slice(10, 16).join('')
+  ].join('-');
 }
 
 function prepararNuevoId() {
@@ -687,22 +704,21 @@ function mostrarEstado(texto) {
 }
 
 // =====================================
-// COMPILADOR MINDAR CORREGIDO
+// COMPILADOR MINDAR LOCAL
 // =====================================
 
 async function compilarFotoAMind(archivo) {
 
-  // El compilador de imágenes está en
-  // MINDAR.IMAGE.Compiler, no MINDAR.Compiler.
+  const biblioteca = window.AluARTMindCompiler;
 
   if (
-    !window.AluARTMindCompiler ||
-    typeof window.AluARTMindCompiler.Compiler !== 'function'
+    !biblioteca ||
+    typeof biblioteca.Compiler !== 'function'
   ) {
     throw new Error(
-      'No se encontró el compilador local.\n' +
-      'Comprueba que exista admin/mindar-compiler.js ' +
-      'y que GitHub Actions haya terminado correctamente.'
+      'No se encontró el compilador local de MindAR.\n' +
+      'Comprueba que admin/mindar-compiler.js ' +
+      'esté publicado en GitHub Pages.'
     );
   }
 
@@ -750,19 +766,27 @@ async function compilarFotoAMind(archivo) {
     );
 
     const compilador =
-      new window.AluARTMindCompiler.Compiler();
+      new biblioteca.Compiler();
 
     await compilador.compileImageTargets(
       [imagen],
       function(progreso) {
 
-        const porcentaje = Math.max(
-          0,
-          Math.min(
-            100,
-            Math.round(progreso)
-          )
-        );
+        const numero = Number(progreso);
+
+        const porcentaje = Number.isFinite(numero)
+          ? Math.max(
+              0,
+              Math.min(
+                100,
+                Math.round(
+                  numero <= 1
+                    ? numero * 100
+                    : numero
+                )
+              )
+            )
+          : 0;
 
         mostrarEstado(
           '🧠 CONVIRTIENDO FOTO A .MIND\n\n' +
@@ -825,7 +849,10 @@ async function subirArchivo(archivo, ruta) {
     );
 
   if (resultado.error) {
-    throw resultado.error;
+    throw new Error(
+      'No se pudo subir ' + ruta + ':\n' +
+      resultado.error.message
+    );
   }
 
   const publicData = supabaseClient
@@ -851,7 +878,7 @@ function obtenerExtensionVideo(nombre) {
   return partes
     .pop()
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
+    .replace(/[^a-z0-9]/g, '') || 'mp4';
 }
 
 // =====================================
@@ -944,9 +971,7 @@ botonCrear.addEventListener(
         }
       )
     ) {
-      alert(
-        'Este ID ya existe en el panel.'
-      );
+      alert('Este ID ya existe en el panel.');
       return;
     }
 
@@ -955,8 +980,6 @@ botonCrear.addEventListener(
     try {
 
       let targetParaSubir = archivoMind;
-
-      // Si no existe .mind, compilar fotografía.
 
       if (!targetParaSubir) {
 
@@ -995,8 +1018,6 @@ botonCrear.addEventListener(
         archivoVideo,
         rutaVideo
       );
-
-      // Generar URL de realidad aumentada.
 
       const arUrl =
         AR_BASE +
