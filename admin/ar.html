@@ -3,10 +3,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport"
         content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-  <title>AluARTmx AR v3</title>
+  <title>AluARTmx AR v3.1</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -31,7 +32,7 @@
       border-radius: 20px;
       text-align: center;
       font-size: 14px;
-      max-width: 85%;
+      max-width: 90%;
       pointer-events: none;
     }
 
@@ -56,6 +57,7 @@
 <body>
 
   <div id="estado">Iniciando AluARTmx AR...</div>
+
   <button id="sonido">Activar sonido</button>
 
   <a-scene
@@ -87,11 +89,12 @@
       id="target"
       mindar-image-target="targetIndex: 0">
 
+      <!-- Plano vertical 9:16 desde el inicio -->
       <a-video
         id="videoPlano"
         src="#videoAR"
         position="0 0 0.01"
-        width="1"
+        width="0.84375"
         height="1.5"
         rotation="0 0 0"
         material="shader: flat; src: #videoAR; side: double"
@@ -105,18 +108,19 @@
   <script>
     const parametros = new URLSearchParams(location.search);
 
-    const id = parametros.get("id") || "001";
+    const idSolicitado = parametros.get("id") || "001";
 
     function archivoSeguro(valor, defecto) {
       if (!valor) return defecto;
 
-      // Evitar rutas externas o inesperadas.
       if (!/^[a-zA-Z0-9_.-]+$/.test(valor)) {
         return defecto;
       }
 
       return valor;
     }
+
+    const id = archivoSeguro(idSolicitado, "001");
 
     const nombreTarget = archivoSeguro(
       parametros.get("target"),
@@ -140,14 +144,16 @@
 
     let visible = false;
     let videoPreparado = false;
-    let ultimoTiempo = -1;
 
     function mensaje(texto) {
       estado.textContent = texto;
       console.log("[AluARTmx]", texto);
     }
 
-    // CONFIGURACION DE ESTABILIZACION
+    // =========================================
+    // ESTABILIZACION MINDAR
+    // =========================================
+
     escena.setAttribute(
       "mindar-image",
       "imageTargetSrc: " + TARGET_URL + ";" +
@@ -158,49 +164,89 @@
       "missTolerance: 10"
     );
 
-    video.src = VIDEO_URL;
+    // Cache busting del MP4 durante la prueba.
+    // No modifica el archivo original.
+    video.src = VIDEO_URL + "?arversion=31";
 
-    // ORIENTACION Y ESCALA AUTOMATICAS
+    // =========================================
+    // GEOMETRIA VERTICAL
+    // =========================================
+
+    function establecerGeometria(ancho, alto) {
+      plano.setAttribute(
+        "geometry",
+        "primitive: plane; width: " +
+        ancho + "; height: " + alto
+      );
+
+      plano.setAttribute("width", ancho);
+      plano.setAttribute("height", alto);
+
+      console.log(
+        "[AluARTmx] Geometria:",
+        ancho,
+        alto
+      );
+    }
+
+    // Proporcion inicial vertical 9:16.
+    establecerGeometria(0.84375, 1.5);
+
     function ajustarVideo() {
       if (!video.videoWidth || !video.videoHeight) {
         return;
       }
 
-      const proporcionVideo =
-        video.videoWidth / video.videoHeight;
+      const anchoOriginal = video.videoWidth;
+      const altoOriginal = video.videoHeight;
 
-      // El cuadro de prueba es vertical 20 x 30.
-      // En MindAR la referencia tiene ancho aproximado 1.
+      const proporcion =
+        anchoOriginal / altoOriginal;
+
+      // Dimensiones de referencia del cuadro 20 x 30.
       const anchoCuadro = 1;
       const altoCuadro = 1.5;
 
-      // Escala tipo "cover": llena el cuadro
-      // conservando la proporcion del video.
+      // Escalado "cover" sin deformar.
       const escala = Math.max(
-        anchoCuadro / video.videoWidth,
-        altoCuadro / video.videoHeight
+        anchoCuadro / anchoOriginal,
+        altoCuadro / altoOriginal
       );
 
-      const ancho = video.videoWidth * escala;
-      const alto = video.videoHeight * escala;
+      const ancho = anchoOriginal * escala;
+      const alto = altoOriginal * escala;
 
-      plano.setAttribute("width", ancho);
-      plano.setAttribute("height", alto);
-
-      // Para evitar mostrar contenido fuera del cuadro,
-      // se puede ajustar posteriormente el recorte.
-      console.log("Video:", video.videoWidth, video.videoHeight);
-      console.log("Proporcion:", proporcionVideo);
-      console.log("Plano:", ancho, alto);
+      establecerGeometria(ancho, alto);
 
       videoPreparado = true;
-      mensaje("Apunta la camara al cuadro");
+
+      console.log(
+        "[AluARTmx] MP4:",
+        anchoOriginal + "x" + altoOriginal
+      );
+
+      console.log(
+        "[AluARTmx] Proporcion:",
+        proporcion
+      );
+
+      if (anchoOriginal > altoOriginal) {
+        mensaje("Aviso: el MP4 cargado es horizontal");
+      } else {
+        mensaje("Video vertical preparado. Apunta al cuadro");
+      }
     }
 
-    video.addEventListener("loadedmetadata", ajustarVideo);
+    video.addEventListener(
+      "loadedmetadata",
+      ajustarVideo
+    );
 
-    // REFRESCO DE TEXTURA: CONSERVAMOS LA
-    // SOLUCION QUE PERMITIO REPRODUCIR EL VIDEO.
+    // =========================================
+    // REFRESCO DE TEXTURA
+    // Mantiene la solucion de reproduccion.
+    // =========================================
+
     function actualizarTextura() {
       const mesh = plano.getObject3D("mesh");
 
@@ -217,21 +263,29 @@
       }
     }
 
-    video.addEventListener("timeupdate", actualizarTextura);
+    video.addEventListener(
+      "timeupdate",
+      actualizarTextura
+    );
 
     function actualizarFrame() {
       actualizarTextura();
 
-      if (typeof video.requestVideoFrameCallback === "function") {
+      if (
+        typeof video.requestVideoFrameCallback === "function"
+      ) {
         video.requestVideoFrameCallback(actualizarFrame);
       }
     }
 
-    if (typeof video.requestVideoFrameCallback === "function") {
+    if (
+      typeof video.requestVideoFrameCallback === "function"
+    ) {
       video.requestVideoFrameCallback(actualizarFrame);
     }
 
-    // RESPALDO PARA NAVEGADORES SIN VIDEO FRAME CALLBACK
+    let ultimoTiempo = -1;
+
     function revisarVideo() {
       if (
         !video.paused &&
@@ -246,6 +300,10 @@
 
     requestAnimationFrame(revisarVideo);
 
+    // =========================================
+    // REPRODUCCION
+    // =========================================
+
     async function reproducirVideo() {
       if (!visible) return;
 
@@ -255,68 +313,109 @@
         }
 
         await video.play();
+
         actualizarTextura();
+
         mensaje("Reproduciendo experiencia AR");
       } catch (error) {
-        console.warn("Error al reproducir:", error);
+        console.warn(
+          "[AluARTmx] Reproduccion:",
+          error
+        );
+
         mensaje("Toca Activar sonido para reproducir");
       }
     }
 
-    target.addEventListener("targetFound", () => {
-      visible = true;
-      reproducirVideo();
-    });
-
-    target.addEventListener("targetLost", () => {
-      visible = false;
-      video.pause();
-      mensaje("Apunta la camara al cuadro");
-    });
-
-    botonSonido.addEventListener("click", async () => {
-      video.muted = false;
-
-      try {
-        if (visible) {
-          await video.play();
-        }
-
-        botonSonido.textContent = "Sonido activado";
-      } catch (error) {
-        console.warn("Sonido:", error);
+    target.addEventListener(
+      "targetFound",
+      () => {
+        visible = true;
+        reproducirVideo();
       }
-    });
+    );
 
-    video.addEventListener("ended", () => {
-      video.pause();
-      mensaje("Video finalizado");
-    });
+    target.addEventListener(
+      "targetLost",
+      () => {
+        visible = false;
+        video.pause();
+        mensaje("Apunta la camara al cuadro");
+      }
+    );
 
-    escena.addEventListener("loaded", async () => {
-      try {
-        mensaje("Iniciando camara...");
+    botonSonido.addEventListener(
+      "click",
+      async () => {
+        video.muted = false;
 
-        const sistema = escena.systems["mindar-image-system"];
+        try {
+          if (visible) {
+            await video.play();
+          }
 
-        await sistema.start();
+          botonSonido.textContent =
+            "Sonido activado";
+        } catch (error) {
+          console.warn(
+            "[AluARTmx] Sonido:",
+            error
+          );
+        }
+      }
+    );
 
-        mensaje(
-          videoPreparado
-            ? "Apunta la camara al cuadro"
-            : "Preparando video..."
+    video.addEventListener(
+      "ended",
+      () => {
+        video.pause();
+        mensaje("Video finalizado");
+      }
+    );
+
+    // =========================================
+    // INICIO DE CAMARA
+    // =========================================
+
+    escena.addEventListener(
+      "loaded",
+      async () => {
+        try {
+          mensaje("Iniciando camara...");
+
+          const sistema =
+            escena.systems["mindar-image-system"];
+
+          await sistema.start();
+
+          if (videoPreparado) {
+            mensaje("Apunta la camara al cuadro");
+          } else {
+            mensaje("Preparando video...");
+          }
+
+        } catch (error) {
+          console.error(
+            "[AluARTmx] Camara:",
+            error
+          );
+
+          mensaje("Error al iniciar la camara");
+        }
+      }
+    );
+
+    video.addEventListener(
+      "error",
+      () => {
+        console.error(
+          "[AluARTmx] Video:",
+          video.error
         );
 
-      } catch (error) {
-        console.error(error);
-        mensaje("Error al iniciar la camara");
+        mensaje("No se pudo cargar el video");
       }
-    });
-
-    video.addEventListener("error", () => {
-      console.error("Error de video:", video.error);
-      mensaje("No se pudo cargar el video");
-    });
+    );
 
   </script>
 
