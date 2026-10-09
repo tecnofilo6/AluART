@@ -98,12 +98,15 @@ body {
     // ESCENA MINDAR
     const escena = document.createElement("a-scene");
 
-   escena.setAttribute(
-  "mindar-image",
-  "imageTargetSrc: " + targetUrl +
-  "; filterMinCF: 0.0001" +
-  "; filterBeta: 0.001;"
-);
+    // AJUSTE EXPERIMENTAL DE SUAVIZADO
+    // filterMinCF y filterBeta ayudan a controlar
+    // la estabilidad y respuesta del seguimiento.
+    escena.setAttribute(
+      "mindar-image",
+      "imageTargetSrc: " + targetUrl +
+      "; filterMinCF: 0.0001" +
+      "; filterBeta: 0.001;"
+    );
 
     escena.setAttribute(
       "vr-mode-ui",
