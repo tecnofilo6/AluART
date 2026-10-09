@@ -3,336 +3,136 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AluARTmx · Panel AR</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
 
 <style>
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
+header{background:#000;padding:24px 18px;text-align:center;border-bottom:1px solid #333}
+header h1{margin:0;font-size:30px}
+header p{margin:8px 0 0;color:#aaa;font-size:14px}
+.contenedor{max-width:900px;margin:auto;padding:24px 16px 60px}
+.card{background:#1d1d1d;border:1px solid #333;border-radius:16px;padding:22px;margin-bottom:20px}
+.card h2{margin-top:0}
+label{display:block;margin:18px 0 8px;font-weight:bold}
+input[type=text],input[type=file]{
+  width:100%;padding:13px;border-radius:9px;
+  border:1px solid #555;background:#111;color:white;font-size:15px
 }
-
-body {
-  margin: 0;
-  background: #111;
-  color: #fff;
-  font-family: Arial, sans-serif;
+input[type=file]{padding:10px}
+small{display:block;margin-top:7px;color:#aaa;line-height:1.5}
+.orientaciones{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.orientacion{
+  border:2px solid #444;border-radius:13px;background:#151515;
+  color:white;padding:17px 10px;cursor:pointer;text-align:center
 }
-
-header {
-  background: #000;
-  padding: 24px 18px;
-  text-align: center;
-  border-bottom: 1px solid #333;
+.orientacion.activa{border-color:white;background:#333}
+.iconoCuadro{
+  display:block;border:2px solid #ddd;border-radius:3px;
+  margin:0 auto 12px;background:#303030
 }
-
-header h1 {
-  margin: 0;
-  font-size: 30px;
+.iconoCuadro.vertical{width:46px;height:69px}
+.iconoCuadro.horizontal{width:69px;height:46px;margin-top:23px}
+.orientacion strong,.orientacion span{display:block}
+.orientacion span{color:#bbb;font-size:12px;margin-top:6px}
+.ayuda{
+  padding:12px;background:#111;border-radius:9px;
+  margin-top:12px;color:#bbb;font-size:13px;line-height:1.5
 }
-
-header p {
-  margin: 8px 0 0;
-  color: #aaa;
-  font-size: 14px;
+button{
+  border:0;border-radius:10px;padding:14px 18px;
+  font-size:15px;font-weight:bold;cursor:pointer
 }
-
-.contenedor {
-  max-width: 900px;
-  margin: auto;
-  padding: 24px 16px 60px;
+.btnCrear{width:100%;margin-top:24px;background:white;color:#111}
+.btnCrear:disabled{opacity:.45;cursor:not-allowed}
+.estado{
+  margin-top:18px;padding:15px;background:#000;border-radius:10px;
+  white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere
 }
-
-.card {
-  background: #1d1d1d;
-  border: 1px solid #333;
-  border-radius: 16px;
-  padding: 22px;
-  margin-bottom: 20px;
+.proyecto{
+  background:#151515;border:1px solid #333;
+  border-radius:14px;padding:18px;margin-top:15px
 }
-
-.card h2 {
-  margin-top: 0;
+.proyecto h3{margin-top:0}
+.info{color:#aaa;font-size:14px;overflow-wrap:anywhere;line-height:1.6}
+.botones{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+.btn{background:white;color:#111}
+.btnSec{background:#333;color:white}
+.btnDanger{background:#8b0000;color:white}
+.qr{
+  margin-top:18px;background:white;padding:15px;
+  display:inline-block;border-radius:10px
 }
-
-label {
-  display: block;
-  margin: 18px 0 8px;
-  font-weight: bold;
-}
-
-input[type="text"],
-input[type="file"] {
-  width: 100%;
-  padding: 13px;
-  border-radius: 9px;
-  border: 1px solid #555;
-  background: #111;
-  color: white;
-  font-size: 15px;
-}
-
-input[type="text"]:focus {
-  outline: none;
-  border-color: white;
-}
-
-input[type="file"] {
-  padding: 10px;
-}
-
-small {
-  display: block;
-  margin-top: 7px;
-  color: #aaa;
-  line-height: 1.5;
-}
-
-.orientaciones {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.orientacion {
-  border: 2px solid #444;
-  border-radius: 13px;
-  background: #151515;
-  color: white;
-  padding: 17px 10px;
-  cursor: pointer;
-  text-align: center;
-  font-size: 15px;
-}
-
-.orientacion.activa {
-  border-color: white;
-  background: #333;
-}
-
-.iconoCuadro {
-  display: block;
-  border: 2px solid #ddd;
-  border-radius: 3px;
-  margin: 0 auto 12px;
-  background: #303030;
-}
-
-.iconoCuadro.vertical {
-  width: 46px;
-  height: 69px;
-}
-
-.iconoCuadro.horizontal {
-  width: 69px;
-  height: 46px;
-  margin-top: 23px;
-  margin-bottom: 12px;
-}
-
-.orientacion strong,
-.orientacion span {
-  display: block;
-}
-
-.orientacion span {
-  color: #bbb;
-  font-size: 12px;
-  margin-top: 6px;
-}
-
-.ayuda {
-  padding: 12px;
-  background: #111;
-  border-radius: 9px;
-  margin-top: 12px;
-  color: #bbb;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-button {
-  border: 0;
-  border-radius: 10px;
-  padding: 14px 18px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.btnCrear {
-  width: 100%;
-  margin-top: 24px;
-  background: white;
-  color: #111;
-}
-
-.btnCrear:disabled {
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-.estado {
-  margin-top: 18px;
-  padding: 15px;
-  background: #000;
-  border-radius: 10px;
-  white-space: pre-wrap;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.proyecto {
-  background: #151515;
-  border: 1px solid #333;
-  border-radius: 14px;
-  padding: 18px;
-  margin-top: 15px;
-}
-
-.proyecto h3 {
-  margin-top: 0;
-}
-
-.info {
-  color: #aaa;
-  font-size: 14px;
-  overflow-wrap: anywhere;
-  line-height: 1.6;
-}
-
-.botones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.btn {
-  background: white;
-  color: #111;
-}
-
-.btnSec {
-  background: #333;
-  color: white;
-}
-
-.btnDanger {
-  background: #8b0000;
-  color: white;
-}
-
-.qr {
-  margin-top: 18px;
-  background: white;
-  padding: 15px;
-  display: inline-block;
-  border-radius: 10px;
-}
-
-#sinProyectos {
-  color: #888;
-  text-align: center;
-  padding: 20px;
-}
-
-@media (max-width: 450px) {
-  .card {
-    padding: 16px;
-  }
-
-  button {
-    font-size: 13px;
-  }
+#sinProyectos{color:#888;text-align:center;padding:20px}
+@media(max-width:450px){
+  .card{padding:16px}
+  button{font-size:13px}
 }
 </style>
 </head>
 
 <body>
-
 <header>
   <h1>AluARTmx</h1>
   <p>Panel de experiencias de realidad aumentada</p>
 </header>
 
 <div class="contenedor">
-
   <div class="card">
-
     <h2>➕ Crear nuevo cuadro</h2>
 
     <label for="id">ID del cuadro</label>
     <input type="text" id="id" readonly>
 
     <label for="nombre">Nombre / cliente</label>
-    <input
-      type="text"
-      id="nombre"
-      placeholder="Ej. Juan Pérez"
-    >
+    <input type="text" id="nombre" placeholder="Ej. Juan Pérez">
 
     <label>Orientación del cuadro</label>
-
     <div class="orientaciones">
-
-      <button
-        type="button"
-        id="btnVertical"
-        class="orientacion activa"
-        aria-pressed="true"
-      >
+      <button type="button" id="btnVertical"
+        class="orientacion activa" aria-pressed="true">
         <div class="iconoCuadro vertical"></div>
         <strong>Vertical</strong>
         <span>Ej. 20 × 30 cm</span>
       </button>
 
-      <button
-        type="button"
-        id="btnHorizontal"
-        class="orientacion"
-        aria-pressed="false"
-      >
+      <button type="button" id="btnHorizontal"
+        class="orientacion" aria-pressed="false">
         <div class="iconoCuadro horizontal"></div>
         <strong>Horizontal</strong>
         <span>Ej. 30 × 20 cm</span>
       </button>
-
     </div>
 
     <div class="ayuda" id="ayudaOrientacion">
-      Cuadro vertical. El video se ajustará para cubrir
-      la superficie de la imagen.
+      Cuadro vertical. El video cubrirá la imagen.
     </div>
 
-    <label for="archivoMind">
-      📷 Target AR (.mind)
-    </label>
-
-    <input
-      type="file"
-      id="archivoMind"
-      accept=".mind,application/octet-stream"
-    >
-
+    <label for="archivoFoto">📷 Fotografía del cuadro (JPG o PNG)</label>
+    <input type="file" id="archivoFoto"
+      accept="image/jpeg,image/png,.jpg,.jpeg,.png">
     <small>
-      Selecciona el archivo .mind generado por MindAR.
-      Esta versión todavía no convierte fotografías a .mind.
+      Sube la misma imagen que vas a imprimir.
+      El panel intentará generar el archivo .mind automáticamente.
+    </small>
+
+    <label for="archivoMind">📁 Archivo .mind existente (opcional)</label>
+    <input type="file" id="archivoMind"
+      accept=".mind,application/octet-stream">
+    <small>
+      Si ya tienes un .mind, puedes usarlo en lugar de la fotografía.
+      Si seleccionas ambos, se utilizará el .mind existente.
     </small>
 
     <label for="archivoVideo" id="labelVideo">
       🎬 Agregar video vertical
     </label>
-
-    <input
-      type="file"
-      id="archivoVideo"
-      accept="video/*"
-    >
-
+    <input type="file" id="archivoVideo" accept="video/*">
     <small id="ayudaVideo">
       Recomendado: video vertical. Máximo 50 MB.
     </small>
@@ -341,31 +141,25 @@ button {
       Aún no has seleccionado un video.
     </div>
 
-    <button
-      type="button"
-      id="crear"
-      class="btnCrear"
-    >
+    <button type="button" id="crear" class="btnCrear">
       🚀 SUBIR ARCHIVOS Y CREAR CUADRO
     </button>
 
     <div id="estado" class="estado">
       Esperando archivos...
     </div>
-
   </div>
 
   <div class="card">
     <h2>📦 Mis cuadros</h2>
     <div id="lista"></div>
   </div>
-
 </div>
 
 <script>
-/* =====================================
-   SUPABASE
-===================================== */
+// ======================================
+// SUPABASE
+// ======================================
 
 const SUPABASE_URL =
   'https://fqqtztgqlijlxyesbaqz.supabase.co';
@@ -380,21 +174,18 @@ const supabaseClient = supabase.createClient(
 
 const STORAGE_BUCKET = 'AluART';
 
-/* =====================================
-   CONFIGURACION
-===================================== */
-
 const AR_BASE =
   'https://tecnofilo6.github.io/AluART/admin/ar.html';
 
 const STORAGE_KEY = 'aluartmx_projects_v3';
 
-/* =====================================
-   ELEMENTOS
-===================================== */
+// ======================================
+// ELEMENTOS
+// ======================================
 
 const inputId = document.getElementById('id');
 const inputNombre = document.getElementById('nombre');
+const inputFoto = document.getElementById('archivoFoto');
 const inputMind = document.getElementById('archivoMind');
 const inputVideo = document.getElementById('archivoVideo');
 
@@ -408,47 +199,26 @@ const btnHorizontal = document.getElementById('btnHorizontal');
 const ayudaOrientacion =
   document.getElementById('ayudaOrientacion');
 
-const labelVideo =
-  document.getElementById('labelVideo');
-
-const ayudaVideo =
-  document.getElementById('ayudaVideo');
-
-const datosVideo =
-  document.getElementById('datosVideo');
+const labelVideo = document.getElementById('labelVideo');
+const ayudaVideo = document.getElementById('ayudaVideo');
+const datosVideo = document.getElementById('datosVideo');
 
 let orientacionSeleccionada = 'vertical';
 let dimensionesVideo = null;
 
-/* =====================================
-   ORIENTACION
-===================================== */
+// ======================================
+// ORIENTACIÓN
+// ======================================
 
 function seleccionarOrientacion(valor) {
-
   orientacionSeleccionada = valor;
-
   const esVertical = valor === 'vertical';
 
-  btnVertical.classList.toggle(
-    'activa',
-    esVertical
-  );
+  btnVertical.classList.toggle('activa', esVertical);
+  btnHorizontal.classList.toggle('activa', !esVertical);
 
-  btnHorizontal.classList.toggle(
-    'activa',
-    !esVertical
-  );
-
-  btnVertical.setAttribute(
-    'aria-pressed',
-    String(esVertical)
-  );
-
-  btnHorizontal.setAttribute(
-    'aria-pressed',
-    String(!esVertical)
-  );
+  btnVertical.setAttribute('aria-pressed', String(esVertical));
+  btnHorizontal.setAttribute('aria-pressed', String(!esVertical));
 
   labelVideo.textContent = esVertical
     ? '🎬 Agregar video vertical'
@@ -459,8 +229,8 @@ function seleccionarOrientacion(valor) {
     : 'Recomendado: video horizontal. Máximo 50 MB.';
 
   ayudaOrientacion.textContent = esVertical
-    ? 'Cuadro vertical: el video cubrirá una superficie con proporción 2:3.'
-    : 'Cuadro horizontal: el video cubrirá una superficie con proporción 3:2.';
+    ? 'Cuadro vertical: proporción 2:3.'
+    : 'Cuadro horizontal: proporción 3:2.';
 
   mostrarDatosVideo();
 }
@@ -473,14 +243,12 @@ btnHorizontal.addEventListener('click', function() {
   seleccionarOrientacion('horizontal');
 });
 
-/* =====================================
-   DIMENSIONES DEL VIDEO
-===================================== */
+// ======================================
+// DIMENSIONES DEL VIDEO
+// ======================================
 
 function leerDimensionesVideo(archivo) {
-
   return new Promise(function(resolve, reject) {
-
     const url = URL.createObjectURL(archivo);
     const video = document.createElement('video');
 
@@ -495,24 +263,18 @@ function leerDimensionesVideo(archivo) {
     }
 
     video.onloadedmetadata = function() {
-
       const resultado = {
         ancho: video.videoWidth,
         alto: video.videoHeight,
         duracion: video.duration
       };
-
       limpiar();
       resolve(resultado);
     };
 
     video.onerror = function() {
       limpiar();
-      reject(
-        new Error(
-          'No se pudieron leer las dimensiones del video.'
-        )
-      );
+      reject(new Error('No se pudieron leer las dimensiones del video.'));
     };
 
     video.src = url;
@@ -520,10 +282,8 @@ function leerDimensionesVideo(archivo) {
 }
 
 function mostrarDatosVideo() {
-
   if (!dimensionesVideo) {
-    datosVideo.textContent =
-      'Aún no has seleccionado un video.';
+    datosVideo.textContent = 'Aún no has seleccionado un video.';
     return;
   }
 
@@ -532,98 +292,69 @@ function mostrarDatosVideo() {
 
   const tipo = alto > ancho
     ? 'vertical'
-    : ancho > alto
-      ? 'horizontal'
-      : 'cuadrado';
+    : ancho > alto ? 'horizontal' : 'cuadrado';
 
   let mensaje =
-    'Video detectado: ' +
-    ancho + ' × ' + alto +
+    'Video detectado: ' + ancho + ' × ' + alto +
     ' píxeles (' + tipo + ').';
 
-  if (
-    tipo !== orientacionSeleccionada &&
-    tipo !== 'cuadrado'
-  ) {
+  if (tipo !== orientacionSeleccionada && tipo !== 'cuadrado') {
     mensaje +=
       '\n\n⚠️ El video tiene otra orientación. ' +
-      'El reproductor recortará la imagen para cubrir ' +
-      'el cuadro sin deformarla.';
+      'El reproductor intentará recortarlo para cubrir el cuadro.';
   } else {
-    mensaje +=
-      '\n\n✅ Orientación compatible con el cuadro.';
+    mensaje += '\n\n✅ Orientación compatible con el cuadro.';
   }
 
   datosVideo.textContent = mensaje;
 }
 
-inputVideo.addEventListener(
-  'change',
-  async function() {
+inputVideo.addEventListener('change', async function() {
+  dimensionesVideo = null;
+  const archivo = inputVideo.files[0];
 
-    dimensionesVideo = null;
-
-    const archivo = inputVideo.files[0];
-
-    if (!archivo) {
-      mostrarDatosVideo();
-      return;
-    }
-
-    datosVideo.textContent =
-      'Analizando dimensiones del video...';
-
-    try {
-      dimensionesVideo =
-        await leerDimensionesVideo(archivo);
-
-      mostrarDatosVideo();
-
-    } catch (error) {
-      datosVideo.textContent =
-        '⚠️ ' + error.message;
-    }
+  if (!archivo) {
+    mostrarDatosVideo();
+    return;
   }
-);
 
-/* =====================================
-   PROYECTOS LOCALES
-===================================== */
-
-function obtenerProyectos() {
+  datosVideo.textContent = 'Analizando dimensiones del video...';
 
   try {
-    return JSON.parse(
-      localStorage.getItem(STORAGE_KEY)
-    ) || [];
+    dimensionesVideo = await leerDimensionesVideo(archivo);
+    mostrarDatosVideo();
+  } catch (error) {
+    datosVideo.textContent = '⚠️ ' + error.message;
+  }
+});
+
+// ======================================
+// PROYECTOS LOCALES
+// ======================================
+
+function obtenerProyectos() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
   } catch (error) {
     return [];
   }
 }
 
 function guardarProyectos(proyectos) {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(proyectos)
-  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(proyectos));
 }
 
-/* =====================================
-   GENERAR ID
-===================================== */
+// ======================================
+// ID AUTOMÁTICO
+// ======================================
 
 function generarSiguienteId() {
-
   const proyectos = obtenerProyectos();
   let numeroMayor = 0;
 
   proyectos.forEach(function(p) {
     const numero = parseInt(p.id, 10);
-
-    if (
-      !isNaN(numero) &&
-      numero > numeroMayor
-    ) {
+    if (!isNaN(numero) && numero > numeroMayor) {
       numeroMayor = numero;
     }
   });
@@ -637,31 +368,22 @@ function prepararNuevoId() {
 
 prepararNuevoId();
 
-/* =====================================
-   ESTADO
-===================================== */
-
 function mostrarEstado(texto) {
   estado.textContent = texto;
 }
 
-/* =====================================
-   SUBIR ARCHIVO
-===================================== */
+// ======================================
+// SUBIR A SUPABASE
+// ======================================
 
 async function subirArchivo(archivo, ruta) {
-
   const resultado = await supabaseClient
     .storage
     .from(STORAGE_BUCKET)
-    .upload(
-      ruta,
-      archivo,
-      {
-        cacheControl: '3600',
-        upsert: true
-      }
-    );
+    .upload(ruta, archivo, {
+      cacheControl: '3600',
+      upsert: true
+    });
 
   if (resultado.error) {
     throw resultado.error;
@@ -675,12 +397,72 @@ async function subirArchivo(archivo, ruta) {
   return publicData.data.publicUrl;
 }
 
-/* =====================================
-   EXTENSION DEL VIDEO
-===================================== */
+// ======================================
+// CONVERTIR FOTOGRAFÍA A .MIND
+// ======================================
+
+async function compilarFotoAMind(archivo) {
+  if (
+    !window.MINDAR ||
+    typeof window.MINDAR.Compiler !== 'function'
+  ) {
+    throw new Error(
+      'No se cargó el compilador de MindAR. ' +
+      'La conversión automática no está disponible. ' +
+      'Puedes utilizar un archivo .mind existente.'
+    );
+  }
+
+  const urlTemporal = URL.createObjectURL(archivo);
+  const imagen = new Image();
+
+  try {
+    await new Promise(function(resolve, reject) {
+      imagen.onload = resolve;
+      imagen.onerror = function() {
+        reject(new Error('No se pudo abrir la fotografía.'));
+      };
+      imagen.src = urlTemporal;
+    });
+
+    const compilador = new window.MINDAR.Compiler();
+
+    await compilador.compileImageTargets(
+      [imagen],
+      function(progreso) {
+        const porcentaje = Math.max(
+          0,
+          Math.min(100, Math.round(progreso))
+        );
+
+        mostrarEstado(
+          '🧠 Convirtiendo fotografía a .mind... ' +
+          porcentaje + '%\nNo cierres esta página.'
+        );
+      }
+    );
+
+    const buffer = await compilador.exportData();
+    const blob = new Blob(
+      [buffer],
+      {type:'application/octet-stream'}
+    );
+
+    if (!blob.size) {
+      throw new Error('MindAR produjo un archivo vacío.');
+    }
+
+    return blob;
+  } finally {
+    URL.revokeObjectURL(urlTemporal);
+  }
+}
+
+// ======================================
+// EXTENSIÓN DEL VIDEO
+// ======================================
 
 function obtenerExtensionVideo(nombre) {
-
   const partes = nombre.split('.');
 
   if (partes.length < 2) {
@@ -693,12 +475,11 @@ function obtenerExtensionVideo(nombre) {
     .replace(/[^a-z0-9]/g, '');
 }
 
-/* =====================================
-   GENERAR QR
-===================================== */
+// ======================================
+// GENERAR QR
+// ======================================
 
 function crearQR(contenedor, url) {
-
   contenedor.innerHTML = '';
 
   new QRCode(contenedor, {
@@ -709,166 +490,169 @@ function crearQR(contenedor, url) {
   });
 }
 
-/* =====================================
-   CREAR CUADRO
-===================================== */
+// ======================================
+// CREAR CUADRO
+// ======================================
 
-botonCrear.addEventListener(
-  'click',
-  async function() {
+botonCrear.addEventListener('click', async function() {
+  const id = inputId.value.trim();
+  const nombre = inputNombre.value.trim();
 
-    const id = inputId.value.trim();
-    const nombre = inputNombre.value.trim();
+  const archivoFoto = inputFoto.files[0];
+  const archivoMind = inputMind.files[0];
+  const archivoVideo = inputVideo.files[0];
 
-    const archivoMind = inputMind.files[0];
-    const archivoVideo = inputVideo.files[0];
-
-    if (!nombre) {
-      alert('Escribe el nombre o cliente.');
-      return;
-    }
-
-    if (!archivoMind) {
-      alert('Selecciona el archivo .mind.');
-      return;
-    }
-
-    if (!archivoVideo) {
-      alert('Selecciona el video.');
-      return;
-    }
-
-    if (
-      !archivoMind.name.toLowerCase().endsWith('.mind')
-    ) {
-      alert('El archivo Target debe ser .mind');
-      return;
-    }
-
-    const limite = 50 * 1024 * 1024;
-
-    if (archivoVideo.size > limite) {
-      alert('El video supera los 50 MB.');
-      return;
-    }
-
-    botonCrear.disabled = true;
-
-    try {
-
-      mostrarEstado(
-        '📷 Subiendo target AR...\n\n' +
-        archivoMind.name
-      );
-
-      const rutaMind =
-        'targets/' + id + '.mind';
-
-      const mindUrl = await subirArchivo(
-        archivoMind,
-        rutaMind
-      );
-
-      mostrarEstado(
-        '🎬 Subiendo video...\n\n' +
-        archivoVideo.name
-      );
-
-      const extension =
-        obtenerExtensionVideo(archivoVideo.name);
-
-      const rutaVideo =
-        'videos/' + id + '.' + extension;
-
-      const videoUrl = await subirArchivo(
-        archivoVideo,
-        rutaVideo
-      );
-
-      // El QR incluye la orientacion.
-      const arUrl =
-        AR_BASE +
-        '?id=' + encodeURIComponent(id) +
-        '&target=' + encodeURIComponent(mindUrl) +
-        '&video=' + encodeURIComponent(videoUrl) +
-        '&orientacion=' +
-        encodeURIComponent(orientacionSeleccionada);
-
-      const proyectos = obtenerProyectos();
-
-      const proyecto = {
-        id: id,
-        name: nombre,
-        url: arUrl,
-        video: videoUrl,
-        target: mindUrl,
-        videoFile: rutaVideo,
-        targetFile: rutaMind,
-        orientacion: orientacionSeleccionada,
-        created: new Date().toISOString()
-      };
-
-      proyectos.push(proyecto);
-      guardarProyectos(proyectos);
-
-      inputNombre.value = '';
-      inputMind.value = '';
-      inputVideo.value = '';
-
-      dimensionesVideo = null;
-      mostrarDatosVideo();
-
-      prepararNuevoId();
-
-      mostrarEstado(
-        '✅ CUADRO CREADO CORRECTAMENTE\n\n' +
-        'ID: ' + id + '\n' +
-        'Cliente: ' + nombre + '\n' +
-        'Orientación: ' +
-        orientacionSeleccionada + '\n\n' +
-        'El QR está asociado al target y video correctos.'
-      );
-
-      renderizarLista();
-
-      setTimeout(function() {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: 'smooth'
-        });
-      }, 300);
-
-    } catch (error) {
-
-      console.error(
-        'ERROR AL CREAR:',
-        error
-      );
-
-      mostrarEstado(
-        '❌ NO SE PUDO CREAR EL CUADRO\n\n' +
-        error.message
-      );
-
-      alert(
-        'Error al subir los archivos:\n\n' +
-        error.message
-      );
-
-    } finally {
-      botonCrear.disabled = false;
-    }
+  if (!nombre) {
+    alert('Escribe el nombre o cliente.');
+    return;
   }
-);
 
-/* =====================================
-   MOSTRAR PROYECTOS
-===================================== */
+  if (!archivoMind && !archivoFoto) {
+    alert('Selecciona una fotografía JPG/PNG o un archivo .mind.');
+    return;
+  }
+
+  if (!archivoVideo) {
+    alert('Selecciona el video.');
+    return;
+  }
+
+  if (
+    archivoMind &&
+    !archivoMind.name.toLowerCase().endsWith('.mind')
+  ) {
+    alert('El archivo Target debe ser .mind.');
+    return;
+  }
+
+  if (
+    !archivoMind &&
+    archivoFoto &&
+    !['image/jpeg','image/png'].includes(archivoFoto.type)
+  ) {
+    alert('La fotografía debe ser JPG o PNG.');
+    return;
+  }
+
+  const limite = 50 * 1024 * 1024;
+
+  if (archivoVideo.size > limite) {
+    alert('El video supera los 50 MB.');
+    return;
+  }
+
+  // Evitar reemplazar un cuadro ya registrado
+  if (obtenerProyectos().some(p => p.id === id)) {
+    alert('Este ID ya existe en el panel.');
+    return;
+  }
+
+  botonCrear.disabled = true;
+
+  try {
+    let archivoTarget = archivoMind;
+
+    if (!archivoTarget) {
+      mostrarEstado('🧠 Preparando fotografía para MindAR...');
+      archivoTarget = await compilarFotoAMind(archivoFoto);
+    }
+
+    mostrarEstado('📷 Subiendo target AR...');
+
+    const rutaMind = 'targets/' + id + '.mind';
+
+    const mindUrl = await subirArchivo(
+      archivoTarget,
+      rutaMind
+    );
+
+    mostrarEstado(
+      '🎬 Subiendo video...\n\n' + archivoVideo.name
+    );
+
+    const extension = obtenerExtensionVideo(archivoVideo.name);
+    const rutaVideo = 'videos/' + id + '.' + extension;
+
+    const videoUrl = await subirArchivo(
+      archivoVideo,
+      rutaVideo
+    );
+
+    const arUrl =
+      AR_BASE +
+      '?id=' + encodeURIComponent(id) +
+      '&target=' + encodeURIComponent(mindUrl) +
+      '&video=' + encodeURIComponent(videoUrl) +
+      '&orientacion=' +
+      encodeURIComponent(orientacionSeleccionada);
+
+    const proyectos = obtenerProyectos();
+
+    const proyecto = {
+      id: id,
+      name: nombre,
+      url: arUrl,
+      video: videoUrl,
+      target: mindUrl,
+      videoFile: rutaVideo,
+      targetFile: rutaMind,
+      orientacion: orientacionSeleccionada,
+      created: new Date().toISOString()
+    };
+
+    proyectos.push(proyecto);
+    guardarProyectos(proyectos);
+
+    inputNombre.value = '';
+    inputFoto.value = '';
+    inputMind.value = '';
+    inputVideo.value = '';
+
+    dimensionesVideo = null;
+    mostrarDatosVideo();
+    prepararNuevoId();
+
+    mostrarEstado(
+      '✅ CUADRO CREADO CORRECTAMENTE\n\n' +
+      'ID: ' + id + '\n' +
+      'Cliente: ' + nombre + '\n' +
+      'Orientación: ' + orientacionSeleccionada +
+      '\n\nEl QR está asociado al target y video.'
+    );
+
+    renderizarLista();
+
+    setTimeout(function() {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+      });
+    }, 300);
+
+  } catch (error) {
+    console.error('ERROR AL CREAR:', error);
+
+    mostrarEstado(
+      '❌ NO SE PUDO CREAR EL CUADRO\n\n' +
+      error.message
+    );
+
+    alert(
+      'Error al crear el cuadro:\n\n' +
+      error.message
+    );
+
+  } finally {
+    botonCrear.disabled = false;
+  }
+});
+
+// ======================================
+// MOSTRAR PROYECTOS
+// ======================================
 
 function renderizarLista() {
-
   const proyectos = obtenerProyectos();
-
   lista.innerHTML = '';
 
   if (proyectos.length === 0) {
@@ -883,13 +667,10 @@ function renderizarLista() {
     .slice()
     .reverse()
     .forEach(function(p) {
-
       const div = document.createElement('div');
       div.className = 'proyecto';
 
-      const orientacion = p.orientacion
-        ? p.orientacion
-        : 'No especificada';
+      const orientacion = p.orientacion || 'No especificada';
 
       div.innerHTML = `
         <h3>🖼️ Cuadro ${escapeHTML(p.id)}</h3>
@@ -897,17 +678,14 @@ function renderizarLista() {
         <div class="info">
           <strong>Cliente:</strong>
           ${escapeHTML(p.name)}
-
           <br><br>
 
           <strong>Orientación:</strong>
           ${escapeHTML(orientacion)}
-
           <br><br>
 
           <strong>Target:</strong><br>
           ${escapeHTML(p.target)}
-
           <br><br>
 
           <strong>Video:</strong><br>
@@ -917,32 +695,16 @@ function renderizarLista() {
         <div class="qr"></div>
 
         <div class="botones">
-
-          <button class="btn probarAR">
-            📱 Probar AR
-          </button>
-
-          <button class="btn verVideo">
-            🎬 Ver video
-          </button>
-
-          <button class="btnSec copiarURL">
-            🔗 Copiar URL
-          </button>
-
-          <button class="btnDanger eliminar">
-            🗑️ Eliminar
-          </button>
-
+          <button class="btn probarAR">📱 Probar AR</button>
+          <button class="btn verVideo">🎬 Ver video</button>
+          <button class="btnSec copiarURL">🔗 Copiar URL</button>
+          <button class="btnDanger eliminar">🗑️ Eliminar</button>
         </div>
       `;
 
       lista.appendChild(div);
 
-      const qrContenedor =
-        div.querySelector('.qr');
-
-      crearQR(qrContenedor, p.url);
+      crearQR(div.querySelector('.qr'), p.url);
 
       div.querySelector('.probarAR')
         .addEventListener('click', function() {
@@ -966,12 +728,11 @@ function renderizarLista() {
     });
 }
 
-/* =====================================
-   SEGURIDAD HTML
-===================================== */
+// ======================================
+// SEGURIDAD HTML
+// ======================================
 
 function escapeHTML(texto) {
-
   return String(texto)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -980,53 +741,45 @@ function escapeHTML(texto) {
     .replace(/'/g, '&#039;');
 }
 
-/* =====================================
-   COPIAR URL
-===================================== */
+// ======================================
+// COPIAR URL
+// ======================================
 
 async function copiarURL(url) {
-
   try {
     await navigator.clipboard.writeText(url);
     alert('URL copiada.');
-
   } catch (error) {
     prompt('Copia esta URL:', url);
   }
 }
 
-/* =====================================
-   ELIMINAR PROYECTO
-===================================== */
+// ======================================
+// ELIMINAR DEL PANEL
+// ======================================
 
 function eliminarProyecto(id) {
-
   const confirmar = confirm(
     '¿Eliminar este cuadro del panel?\n\n' +
     'Los archivos de Supabase no se borrarán.'
   );
 
-  if (!confirmar) {
-    return;
-  }
+  if (!confirmar) return;
 
   const proyectos = obtenerProyectos();
 
-  const nuevos = proyectos.filter(
-    function(p) {
-      return p.id !== id;
-    }
-  );
+  const nuevos = proyectos.filter(function(p) {
+    return p.id !== id;
+  });
 
   guardarProyectos(nuevos);
-
   renderizarLista();
   prepararNuevoId();
 }
 
-/* =====================================
-   INICIO
-===================================== */
+// ======================================
+// INICIO
+// ======================================
 
 seleccionarOrientacion('vertical');
 renderizarLista();
