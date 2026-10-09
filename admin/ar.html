@@ -1,423 +1,446 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AluARTmx AR</title>
 
-  <title>AluARTmx AR v3.1</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
 
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #000;
-      font-family: Arial, sans-serif;
-    }
+#mensaje {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    text-align: center;
+    max-width: 85%;
+}
 
-    #estado {
-      position: fixed;
-      z-index: 100;
-      top: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.75);
-      color: white;
-      padding: 10px 16px;
-      border-radius: 20px;
-      text-align: center;
-      font-size: 14px;
-      max-width: 90%;
-      pointer-events: none;
-    }
-
-    #sonido {
-      position: fixed;
-      z-index: 101;
-      bottom: 25px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 13px 22px;
-      border: none;
-      border-radius: 25px;
-      background: white;
-      color: black;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
+#botonSonido {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999999;
+    background: white;
+    color: black;
+    border: 3px solid black;
+    border-radius: 40px;
+    padding: 16px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+    cursor: pointer;
+    white-space: nowrap;
+}
+</style>
 </head>
 
 <body>
 
-  <div id="estado">Iniciando AluARTmx AR...</div>
+<div id="mensaje">
+    AluARTmx · Preparando experiencia...
+</div>
 
-  <button id="sonido">Activar sonido</button>
+<button id="botonSonido" type="button">
+    🔊 ACTIVAR SONIDO
+</button>
 
-  <a-scene
-    id="escena"
-    embedded
-    mindar-image="autoStart: false"
-    color-space="sRGB"
-    renderer="colorManagement: true; physicallyCorrectLights: true"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false">
+<script>
+(async function() {
 
-    <a-assets timeout="30000">
-      <video
-        id="videoAR"
-        preload="auto"
-        muted
-        playsinline
-        webkit-playsinline
-        crossorigin="anonymous">
-      </video>
-    </a-assets>
+    const mensaje = document.getElementById("mensaje");
+    const boton = document.getElementById("botonSonido");
 
-    <a-camera
-      position="0 0 0"
-      look-controls="enabled: false">
-    </a-camera>
+    try {
 
-    <a-entity
-      id="target"
-      mindar-image-target="targetIndex: 0">
+        // PARAMETROS DEL QR
 
-      <!-- Plano vertical 9:16 desde el inicio -->
-      <a-video
-        id="videoPlano"
-        src="#videoAR"
-        position="0 0 0.01"
-        width="0.84375"
-        height="1.5"
-        rotation="0 0 0"
-        material="shader: flat; src: #videoAR; side: double"
-        visible="true">
-      </a-video>
-
-    </a-entity>
-
-  </a-scene>
-
-  <script>
-    const parametros = new URLSearchParams(location.search);
-
-    const idSolicitado = parametros.get("id") || "001";
-
-    function archivoSeguro(valor, defecto) {
-      if (!valor) return defecto;
-
-      if (!/^[a-zA-Z0-9_.-]+$/.test(valor)) {
-        return defecto;
-      }
-
-      return valor;
-    }
-
-    const id = archivoSeguro(idSolicitado, "001");
-
-    const nombreTarget = archivoSeguro(
-      parametros.get("target"),
-      id + ".mind"
-    );
-
-    const nombreVideo = archivoSeguro(
-      parametros.get("video"),
-      id + ".mp4"
-    );
-
-    const TARGET_URL = "./" + nombreTarget;
-    const VIDEO_URL = "./" + nombreVideo;
-
-    const escena = document.querySelector("#escena");
-    const target = document.querySelector("#target");
-    const video = document.querySelector("#videoAR");
-    const plano = document.querySelector("#videoPlano");
-    const estado = document.querySelector("#estado");
-    const botonSonido = document.querySelector("#sonido");
-
-    let visible = false;
-    let videoPreparado = false;
-
-    function mensaje(texto) {
-      estado.textContent = texto;
-      console.log("[AluARTmx]", texto);
-    }
-
-    // =========================================
-    // ESTABILIZACION MINDAR
-    // =========================================
-
-    escena.setAttribute(
-      "mindar-image",
-      "imageTargetSrc: " + TARGET_URL + ";" +
-      "autoStart: false;" +
-      "filterMinCF: 0.0005;" +
-      "filterBeta: 0.001;" +
-      "warmupTolerance: 5;" +
-      "missTolerance: 10"
-    );
-
-    // Cache busting del MP4 durante la prueba.
-    // No modifica el archivo original.
-    video.src = VIDEO_URL + "?arversion=31";
-
-    // =========================================
-    // GEOMETRIA VERTICAL
-    // =========================================
-
-    function establecerGeometria(ancho, alto) {
-      plano.setAttribute(
-        "geometry",
-        "primitive: plane; width: " +
-        ancho + "; height: " + alto
-      );
-
-      plano.setAttribute("width", ancho);
-      plano.setAttribute("height", alto);
-
-      console.log(
-        "[AluARTmx] Geometria:",
-        ancho,
-        alto
-      );
-    }
-
-    // Proporcion inicial vertical 9:16.
-    establecerGeometria(0.84375, 1.5);
-
-    function ajustarVideo() {
-      if (!video.videoWidth || !video.videoHeight) {
-        return;
-      }
-
-      const anchoOriginal = video.videoWidth;
-      const altoOriginal = video.videoHeight;
-
-      const proporcion =
-        anchoOriginal / altoOriginal;
-
-      // Dimensiones de referencia del cuadro 20 x 30.
-      const anchoCuadro = 1;
-      const altoCuadro = 1.5;
-
-      // Escalado "cover" sin deformar.
-      const escala = Math.max(
-        anchoCuadro / anchoOriginal,
-        altoCuadro / altoOriginal
-      );
-
-      const ancho = anchoOriginal * escala;
-      const alto = altoOriginal * escala;
-
-      establecerGeometria(ancho, alto);
-
-      videoPreparado = true;
-
-      console.log(
-        "[AluARTmx] MP4:",
-        anchoOriginal + "x" + altoOriginal
-      );
-
-      console.log(
-        "[AluARTmx] Proporcion:",
-        proporcion
-      );
-
-      if (anchoOriginal > altoOriginal) {
-        mensaje("Aviso: el MP4 cargado es horizontal");
-      } else {
-        mensaje("Video vertical preparado. Apunta al cuadro");
-      }
-    }
-
-    video.addEventListener(
-      "loadedmetadata",
-      ajustarVideo
-    );
-
-    // =========================================
-    // REFRESCO DE TEXTURA
-    // Mantiene la solucion de reproduccion.
-    // =========================================
-
-    function actualizarTextura() {
-      const mesh = plano.getObject3D("mesh");
-
-      if (!mesh) return;
-
-      const materiales = Array.isArray(mesh.material)
-        ? mesh.material
-        : [mesh.material];
-
-      for (const material of materiales) {
-        if (material && material.map) {
-          material.map.needsUpdate = true;
-        }
-      }
-    }
-
-    video.addEventListener(
-      "timeupdate",
-      actualizarTextura
-    );
-
-    function actualizarFrame() {
-      actualizarTextura();
-
-      if (
-        typeof video.requestVideoFrameCallback === "function"
-      ) {
-        video.requestVideoFrameCallback(actualizarFrame);
-      }
-    }
-
-    if (
-      typeof video.requestVideoFrameCallback === "function"
-    ) {
-      video.requestVideoFrameCallback(actualizarFrame);
-    }
-
-    let ultimoTiempo = -1;
-
-    function revisarVideo() {
-      if (
-        !video.paused &&
-        video.currentTime !== ultimoTiempo
-      ) {
-        actualizarTextura();
-        ultimoTiempo = video.currentTime;
-      }
-
-      requestAnimationFrame(revisarVideo);
-    }
-
-    requestAnimationFrame(revisarVideo);
-
-    // =========================================
-    // REPRODUCCION
-    // =========================================
-
-    async function reproducirVideo() {
-      if (!visible) return;
-
-      try {
-        if (video.ended) {
-          video.currentTime = 0;
-        }
-
-        await video.play();
-
-        actualizarTextura();
-
-        mensaje("Reproduciendo experiencia AR");
-      } catch (error) {
-        console.warn(
-          "[AluARTmx] Reproduccion:",
-          error
+        const parametros = new URLSearchParams(
+            window.location.search
         );
 
-        mensaje("Toca Activar sonido para reproducir");
-      }
-    }
+        const id = parametros.get("id");
+        const targetUrl = parametros.get("target");
+        const videoUrl = parametros.get("video");
 
-    target.addEventListener(
-      "targetFound",
-      () => {
-        visible = true;
-        reproducirVideo();
-      }
-    );
-
-    target.addEventListener(
-      "targetLost",
-      () => {
-        visible = false;
-        video.pause();
-        mensaje("Apunta la camara al cuadro");
-      }
-    );
-
-    botonSonido.addEventListener(
-      "click",
-      async () => {
-        video.muted = false;
-
-        try {
-          if (visible) {
-            await video.play();
-          }
-
-          botonSonido.textContent =
-            "Sonido activado";
-        } catch (error) {
-          console.warn(
-            "[AluARTmx] Sonido:",
-            error
-          );
+        if (!id || !targetUrl || !videoUrl) {
+            mensaje.textContent =
+                "❌ Esta experiencia AR no está configurada correctamente.";
+            return;
         }
-      }
-    );
 
-    video.addEventListener(
-      "ended",
-      () => {
-        video.pause();
-        mensaje("Video finalizado");
-      }
-    );
+        mensaje.textContent =
+            "AluARTmx · Cargando cuadro " + id + "...";
 
-    // =========================================
-    // INICIO DE CAMARA
-    // =========================================
+        // ESCENA MINDAR
 
-    escena.addEventListener(
-      "loaded",
-      async () => {
-        try {
-          mensaje("Iniciando camara...");
+        const escena = document.createElement("a-scene");
 
-          const sistema =
-            escena.systems["mindar-image-system"];
+        escena.setAttribute(
+            "mindar-image",
+            "imageTargetSrc: " + targetUrl + ";"
+        );
 
-          await sistema.start();
+        escena.setAttribute(
+            "vr-mode-ui",
+            "enabled: false"
+        );
 
-          if (videoPreparado) {
-            mensaje("Apunta la camara al cuadro");
-          } else {
-            mensaje("Preparando video...");
-          }
+        escena.setAttribute(
+            "device-orientation-permission-ui",
+            "enabled: false"
+        );
 
-        } catch (error) {
-          console.error(
-            "[AluARTmx] Camara:",
-            error
-          );
+        escena.setAttribute(
+            "renderer",
+            "colorManagement: true; physicallyCorrectLights: true"
+        );
 
-          mensaje("Error al iniciar la camara");
+        // VIDEO
+
+        const assets = document.createElement("a-assets");
+
+        const video = document.createElement("video");
+
+        video.id = "videoAR";
+        video.src = videoUrl;
+        video.preload = "auto";
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+
+        video.setAttribute("muted", "");
+        video.setAttribute("playsinline", "");
+        video.setAttribute("webkit-playsinline", "");
+
+        video.crossOrigin = "anonymous";
+
+        assets.appendChild(video);
+
+        // CAMARA
+
+        const camara = document.createElement("a-camera");
+
+        camara.setAttribute("position", "0 0 0");
+        camara.setAttribute(
+            "look-controls",
+            "enabled: false"
+        );
+
+        // TARGET
+
+        const target = document.createElement("a-entity");
+
+        target.setAttribute(
+            "mindar-image-target",
+            "targetIndex: 0"
+        );
+
+        // PLANO DEL VIDEO
+
+        const videoPlano = document.createElement("a-video");
+
+        videoPlano.id = "videoPlano";
+
+        videoPlano.setAttribute("src", "#videoAR");
+        videoPlano.setAttribute("position", "0 0 0");
+        videoPlano.setAttribute("width", "1");
+        videoPlano.setAttribute("height", "0.5625");
+        videoPlano.setAttribute("rotation", "0 0 0");
+
+        videoPlano.setAttribute(
+            "material",
+            "shader: flat; src: #videoAR; side: double;"
+        );
+
+        videoPlano.setAttribute("visible", "true");
+
+        target.appendChild(videoPlano);
+
+        escena.appendChild(assets);
+        escena.appendChild(camara);
+        escena.appendChild(target);
+
+        document.body.appendChild(escena);
+
+        // CONTROL DE REPRODUCCION
+
+        let cuadroVisible = false;
+        let reproduccionSolicitada = false;
+
+        async function reproducirVideo() {
+
+            if (reproduccionSolicitada) return;
+
+            reproduccionSolicitada = true;
+
+            try {
+                await video.play();
+
+                console.log(
+                    "AluARTmx: reproducción iniciada"
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "AluARTmx: error al reproducir",
+                    error
+                );
+
+                mensaje.textContent =
+                    "Toca ACTIVAR SONIDO para iniciar el video.";
+
+            } finally {
+                reproduccionSolicitada = false;
+            }
         }
-      }
-    );
 
-    video.addEventListener(
-      "error",
-      () => {
+        // RECONOCIMIENTO DEL CUADRO
+
+        target.addEventListener(
+            "targetFound",
+            function() {
+
+                cuadroVisible = true;
+
+                console.log(
+                    "AluARTmx: CUADRO " + id + " DETECTADO"
+                );
+
+                mensaje.textContent =
+                    "AluARTmx · Cuadro " + id + " detectado";
+
+                reproducirVideo();
+            }
+        );
+
+        target.addEventListener(
+            "targetLost",
+            function() {
+
+                cuadroVisible = false;
+
+                console.log(
+                    "AluARTmx: CUADRO " + id + " PERDIDO"
+                );
+
+                video.pause();
+
+                mensaje.textContent =
+                    "Apunta la cámara hacia tu cuadro.";
+            }
+        );
+
+        // BOTON DE SONIDO
+
+        boton.addEventListener(
+            "click",
+            async function() {
+
+                video.muted = false;
+                video.volume = 1;
+
+                try {
+
+                    await video.play();
+
+                    boton.textContent =
+                        "🔊 SONIDO ACTIVADO";
+
+                    console.log(
+                        "AluARTmx: sonido activado"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "AluARTmx: error de audio",
+                        error
+                    );
+
+                    mensaje.textContent =
+                        "No se pudo iniciar el video.";
+                }
+            }
+        );
+
+        // ACTUALIZACION DE TEXTURA
+
+        escena.addEventListener(
+            "loaded",
+            function() {
+
+                console.log(
+                    "AluARTmx: escena cargada"
+                );
+
+                const mesh =
+                    videoPlano.getObject3D("mesh");
+
+                if (!mesh || !mesh.material) {
+
+                    console.warn(
+                        "AluARTmx: material no disponible"
+                    );
+
+                    return;
+                }
+
+                const textura = mesh.material.map;
+
+                if (!textura) {
+
+                    console.warn(
+                        "AluARTmx: textura no disponible"
+                    );
+
+                    return;
+                }
+
+                console.log(
+                    "AluARTmx: textura de video detectada"
+                );
+
+                // Actualizar la textura cuando
+                // el video tenga datos disponibles.
+
+                video.addEventListener(
+                    "timeupdate",
+                    function() {
+
+                        if (video.readyState >= 2) {
+                            textura.needsUpdate = true;
+                        }
+                    }
+                );
+
+                // Actualizar en cada fotograma
+                // cuando el navegador lo permita.
+
+                if (typeof video.requestVideoFrameCallback === "function") {
+
+                    function actualizarFotograma() {
+
+                        if (
+                            video.readyState >= 2 &&
+                            !video.paused
+                        ) {
+                            textura.needsUpdate = true;
+                        }
+
+                        video.requestVideoFrameCallback(
+                            actualizarFotograma
+                        );
+                    }
+
+                    video.requestVideoFrameCallback(
+                        actualizarFotograma
+                    );
+                }
+            }
+        );
+
+        // DIAGNOSTICO DEL VIDEO
+
+        video.addEventListener(
+            "playing",
+            function() {
+
+                console.log(
+                    "AluARTmx: video reproduciéndose"
+                );
+            }
+        );
+
+        video.addEventListener(
+            "pause",
+            function() {
+
+                console.log(
+                    "AluARTmx: video pausado"
+                );
+            }
+        );
+
+        video.addEventListener(
+            "error",
+            function() {
+
+                console.error(
+                    "AluARTmx: error de video",
+                    video.error
+                );
+
+                mensaje.textContent =
+                    "❌ Error al cargar el video.";
+            }
+        );
+
+        video.addEventListener(
+            "ended",
+            function() {
+
+                console.log(
+                    "AluARTmx: video terminado"
+                );
+
+                video.pause();
+
+                mensaje.textContent =
+                    "AluARTmx · Video terminado";
+            }
+        );
+
+        // INFORMACION DE DIAGNOSTICO
+
+        setInterval(function() {
+
+            if (cuadroVisible) {
+
+                console.log(
+                    "AluARTmx diagnóstico:",
+                    {
+                        tiempo: video.currentTime,
+                        pausado: video.paused,
+                        estado: video.readyState,
+                        visible: cuadroVisible
+                    }
+                );
+            }
+
+        }, 5000);
+
+    } catch (error) {
+
         console.error(
-          "[AluARTmx] Video:",
-          video.error
+            "AluARTmx: error general",
+            error
         );
 
-        mensaje("No se pudo cargar el video");
-      }
-    );
+        mensaje.textContent =
+            "❌ Error al cargar la experiencia AR.";
+    }
 
-  </script>
+})();
+</script>
 
 </body>
 </html>
