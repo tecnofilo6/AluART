@@ -1,9 +1,17 @@
+
 {
   "name": "aluartmx-mindar-compiler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
-  "scripts": {"build": "vite build --config vite.config.js"},
-  "dependencies": {"mind-ar": "1.2.5"},
-  "devDependencies": {"vite": "^5.4.0"}
+  "scripts": {
+    "build": "vite build --config vite.config.js"
+  },
+  "dependencies": {
+    "mind-ar": "1.2.5",
+    "@tensorflow/tfjs-backend-cpu": "4.22.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
 }
