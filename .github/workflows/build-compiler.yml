@@ -1,0 +1,42 @@
+
+name: Build MindAR compiler
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compiler/**'
+      - '.github/workflows/build-compiler.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build compiler
+        working-directory: compiler
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: Save compiled file
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin/mindar-compiler.js
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build local MindAR compiler'
+            git push
+          fi
