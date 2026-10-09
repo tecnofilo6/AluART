@@ -1,0 +1,20 @@
+AluARTmx - Compilador local MindAR (propuesta de integración, NO probado en GitHub Pages)
+
+1. Haz una copia de seguridad de admin/index.html y de los registros del navegador.
+2. En tu repositorio GitHub crea/sube:
+   admin/index.html (reemplaza el actual)
+   compiler/entry.js
+   compiler/package.json
+   compiler/vite.config.js
+   .github/workflows/build-compiler.yml
+3. Verifica que la rama sea main; si es otra, edita branches en el workflow.
+4. En Settings > Actions > General habilita permiso de escritura para workflows si es necesario.
+5. En Actions ejecuta 'Build MindAR compiler' (Run workflow).
+6. Si termina en verde, debe aparecer admin/mindar-compiler.js en el repositorio.
+7. Abre admin/index.html desde GitHub Pages y prueba una imagen JPG/PNG.
+8. Si falla, copia el registro de Actions o el error del navegador. No modifiques admin/ar.html.
+
+AVISO: Esta integración usa el compilador fuente de MindAR con Vite y worker inline.
+No fue posible ejecutar npm install ni comprobar el build en este entorno sin acceso al registro npm.
+La ejecución real del workflow confirmará si el empaquetado es compatible.
+El ID automático sigue siendo local al navegador. Comprueba que no coincida con otro ID ya utilizado.
