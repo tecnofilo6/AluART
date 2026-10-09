@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AluARTmx AR - Prueba 4</title>
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: Arial, sans-serif;
+}
+#mensaje {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: rgba(0,0,0,.75);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 14px;
+  text-align: center;
+  width: 80%;
+  max-width: 350px;
+  pointer-events: none;
+}
+#mensaje strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+#estado {
+  font-size: 13px;
+}
+#sonido {
+  position: fixed;
+  bottom: 22px;
+  left: 18px;
+  z-index: 9999;
+  border: 1px solid #777;
+  border-radius: 30px;
+  background: rgba(0,0,0,.75);
+  color: white;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+.a-enter-vr-button {
+  display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<div id="mensaje">
+  <strong>AluARTmx</strong>
+  <span id="estado">Preparando tu experiencia...</span>
+</div>
+
+<button id="sonido" type="button">
+  🔇 Activar sonido
+</button>
+
+<script>
+(async function () {
+
+  const params = new URLSearchParams(location.search);
+  const targetUrl = params.get("target");
+  const videoUrl = params.get("video");
+
+  const estado = document.getElementById("estado");
+  const boton = document.getElementById("sonido");
+
+  function mensaje(texto) {
+    estado.textContent = texto;
+  }
+
+  if (!targetUrl || !videoUrl) {
+    mensaje("Faltan datos de esta experiencia AR.");
+    return;
+  }
+
+  // Crear escena
+  const escena = document.createElement("a-scene");
+
+  escena.setAttribute("mindar-image",
+    "imageTargetSrc: " + targetUrl +
+    "; filterMinCF: 0.005" +
+    "; filterBeta: 0.05"
+  );
+
+  escena.setAttribute("vr-mode-ui", "enabled: false");
+  escena.setAttribute(
+    "device-orientation-permission-ui",
+    "enabled: false"
+  );
+  escena.setAttribute(
+    "renderer",
+    "colorManagement: true"
+  );
+
+  // Video
+  const assets = document.createElement("a-assets");
+  const video = document.createElement("video");
+
+  video.id = "videoAR";
+  video.src = videoUrl;
+  video.crossOrigin = "anonymous";
+  video.preload = "auto";
+  video.playsInline = true;
+  video.muted = true;
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+  video.setAttribute("muted", "");
+
+  assets.appendChild(video);
+
+  // Camara
+  const camara = document.createElement("a-camera");
+  camara.setAttribute("position", "0 0 0");
+  camara.setAttribute("look-controls", "enabled: false");
+
+  // Target
+  const target = document.createElement("a-entity");
+  target.setAttribute(
+    "mindar-image-target",
+    "targetIndex: 0"
+  );
+
+  // Plano del video
+  const plano = document.createElement("a-video");
+
+  plano.setAttribute("src", "#videoAR");
+  plano.setAttribute("position", "0 0 0");
+  plano.setAttribute("rotation", "0 0 0");
+
+  plano.setAttribute("material",
+    "shader: flat; src: #videoAR; side: double"
+  );
+
+  // Dimensiones temporales.
+  // Se reemplazan por las del target antes de mostrarlo.
+  plano.setAttribute("geometry", {
+    primitive: "plane",
+    width: 1,
+    height: 1
+  });
+
+  plano.setAttribute("visible", false);
+
+  target.appendChild(plano);
+
+  escena.appendChild(assets);
+  escena.appendChild(camara);
+  escena.appendChild(target);
+  document.body.appendChild(escena);
+
+  let anchoPlano = 0;
+  let altoPlano = 0;
+  let dimensionesListas = false;
+  let cuadroVisible = false;
+
+  // Leer dimensiones calculadas por MindAR
+  function obtenerDimensiones() {
+
+    const sistema =
+      escena.systems["mindar-image-system"];
+
+    if (!sistema) return null;
+
+    // Distintas ubicaciones internas posibles.
+    const fuentes = [
+      sistema.controller?.imageTargetDimensions,
+      sistema.imageTargetDimensions
+    ];
+
+    for (const fuente of fuentes) {
+      if (!fuente || !fuente[0]) continue;
+
+      const d = fuente[0];
+
+      const ancho = Array.isArray(d)
+        ? d[0] : d.width;
+
+      const alto = Array.isArray(d)
+        ? d[1] : d.height;
+
+      if (Number.isFinite(ancho) &&
+          Number.isFinite(alto) &&
+          ancho > 0 && alto > 0) {
+
+        return { ancho, alto };
+      }
+    }
+
+    return null;
+  }
+
+  // Ajustar video al tamaño del target
+  function ajustarPlano() {
+
+    const dimensiones = obtenerDimensiones();
+
+    if (!dimensiones) return false;
+
+    // MindAR normaliza el ancho a una unidad.
+    anchoPlano = 1;
+    altoPlano =
+      dimensiones.alto / dimensiones.ancho;
+
+    plano.setAttribute("geometry", {
+      primitive: "plane",
+      width: anchoPlano,
+      height: altoPlano
+    });
+
+    dimensionesListas = true;
+
+    console.log("AluARTmx - Dimensiones target",
+      dimensiones);
+
+    console.log("AluARTmx - Plano",
+      anchoPlano, altoPlano);
+
+    ajustarTextura();
+
+    return true;
+  }
+
+  // Evitar estirar el video.
+  // Se recorta al centro si las proporciones difieren.
+  function ajustarTextura() {
+
+    if (!dimensionesListas) return;
+
+    const mesh = plano.getObject3D("mesh");
+
+    if (!mesh || !mesh.material ||
+        !mesh.material.map) return;
+
+    const textura = mesh.material.map;
+
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    if (!vw || !vh) return;
+
+    const relacionTarget = anchoPlano / altoPlano;
+    const relacionVideo = vw / vh;
+
+    let rx = 1;
+    let ry = 1;
+
+    if (relacionVideo > relacionTarget) {
+      rx = relacionTarget / relacionVideo;
+    } else {
+      ry = relacionVideo / relacionTarget;
+    }
+
+    textura.repeat.set(rx, ry);
+    textura.offset.set(
+      (1 - rx) / 2,
+      (1 - ry) / 2
+    );
+
+    textura.needsUpdate = true;
+  }
+
+  function prepararDimensiones() {
+
+    if (dimensionesListas) return true;
+
+    const listo = ajustarPlano();
+
+    if (listo) {
+      plano.setAttribute("visible", cuadroVisible);
+    }
+
+    return listo;
+  }
+
+  escena.addEventListener("arReady", function () {
+    mensaje("Apunta la cámara hacia tu fotografía.");
+    prepararDimensiones();
+  });
+
+  video.addEventListener(
+    "loadedmetadata",
+    ajustarTextura
+  );
+
+  target.addEventListener(
+    "targetFound",
+    async function () {
+
+      cuadroVisible = true;
+
+      if (!prepararDimensiones()) {
+        plano.setAttribute("visible", false);
+        mensaje(
+          "No se pudieron leer las dimensiones del cuadro."
+        );
+        return;
+      }
+
+      ajustarTextura();
+
+      plano.setAttribute("visible", true);
+      mensaje("Tu fotografía cobra vida ✨");
+
+      try {
+        await video.play();
+      } catch (error) {
+        console.error(error);
+        mensaje("Toca activar sonido para reproducir.");
+      }
+    }
+  );
+
+  target.addEventListener(
+    "targetLost",
+    function () {
+
+      cuadroVisible = false;
+      plano.setAttribute("visible", false);
+      video.pause();
+
+      mensaje("Apunta la cámara hacia tu fotografía.");
+    }
+  );
+
+  boton.addEventListener(
+    "click",
+    async function () {
+
+      video.muted = !video.muted;
+      video.volume = 1;
+
+      boton.textContent = video.muted
+        ? "🔇 Activar sonido"
+        : "🔊 Sonido activado";
+
+      if (cuadroVisible && dimensionesListas) {
+        try {
+          await video.play();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+  );
+
+  video.addEventListener("error", function () {
+    mensaje("No se pudo cargar el video.");
+  });
+
+})();
+</script>
+
+</body>
+</html>
