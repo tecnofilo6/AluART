@@ -1,0 +1,506 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AluARTmx AR - Prueba 6</title>
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
+}
+
+#cabecera {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 84%;
+  max-width: 380px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.78);
+  color: white;
+  text-align: center;
+  pointer-events: none;
+}
+
+#cabecera strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+#estado {
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+#sonido {
+  position: fixed;
+  bottom: 22px;
+  left: 18px;
+  z-index: 9999;
+  border: 1px solid #777;
+  border-radius: 30px;
+  padding: 12px 16px;
+  background: rgba(0,0,0,.75);
+  color: white;
+  font-size: 15px;
+}
+
+.a-enter-vr-button {
+  display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<div id="cabecera">
+  <strong>AluARTmx · Prueba 6</strong>
+  <span id="estado">
+    Preparando experiencia...
+  </span>
+</div>
+
+<button id="sonido" type="button">
+  🔇 Activar sonido
+</button>
+
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+
+  const targetUrl = params.get("target");
+  const videoUrl = params.get("video");
+  const orientacion =
+    params.get("orientacion") || "vertical";
+
+  const estado = document.getElementById("estado");
+  const boton = document.getElementById("sonido");
+
+  function mensaje(texto) {
+    estado.textContent = texto;
+  }
+
+  if (!targetUrl || !videoUrl) {
+    mensaje("Faltan datos del cuadro.");
+    return;
+  }
+
+  // Medidas provisionales.
+  // Serán reemplazadas si MindAR
+  // proporciona dimensiones válidas.
+  let ancho = 1;
+  let alto = orientacion === "horizontal"
+    ? 2 / 3
+    : 1.5;
+
+  let dimensionesDetectadas = false;
+  const escalaVideo = 0.90;
+
+  // ====================================
+  // ESCENA MINDAR
+  // ====================================
+
+  const escena = document.createElement("a-scene");
+
+  escena.setAttribute(
+    "mindar-image",
+    "imageTargetSrc: " + targetUrl +
+    "; filterMinCF: 0.005" +
+    "; filterBeta: 0.05"
+  );
+
+  escena.setAttribute(
+    "vr-mode-ui",
+    "enabled: false"
+  );
+
+  escena.setAttribute(
+    "device-orientation-permission-ui",
+    "enabled: false"
+  );
+
+  escena.setAttribute(
+    "renderer",
+    "colorManagement: true"
+  );
+
+  // ====================================
+  // VIDEO
+  // ====================================
+
+  const assets = document.createElement("a-assets");
+  const video = document.createElement("video");
+
+  video.id = "videoAR";
+  video.src = videoUrl;
+  video.crossOrigin = "anonymous";
+  video.preload = "auto";
+  video.muted = true;
+  video.defaultMuted = true;
+  video.playsInline = true;
+
+  video.setAttribute("muted", "");
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+
+  assets.appendChild(video);
+
+  // ====================================
+  // CAMARA
+  // ====================================
+
+  const camara = document.createElement("a-camera");
+
+  camara.setAttribute("position", "0 0 0");
+  camara.setAttribute(
+    "look-controls",
+    "enabled: false"
+  );
+
+  // ====================================
+  // TARGET
+  // ====================================
+
+  const target = document.createElement("a-entity");
+
+  target.setAttribute(
+    "mindar-image-target",
+    "targetIndex: 0"
+  );
+
+  // ====================================
+  // PLANO DE VIDEO
+  // ====================================
+
+  const plano = document.createElement("a-video");
+
+  plano.setAttribute("src", "#videoAR");
+  plano.setAttribute("position", "0 0 0");
+  plano.setAttribute("rotation", "0 0 0");
+
+  plano.setAttribute("geometry", {
+    primitive: "plane",
+    width: ancho * escalaVideo,
+    height: alto * escalaVideo
+  });
+
+  plano.setAttribute(
+    "material",
+    "shader: flat; src: #videoAR; side: double"
+  );
+
+  // ====================================
+  // DIAGNOSTICO DE BORDES
+  // ====================================
+
+  const diagnostico = document.createElement("a-entity");
+
+  function agregarLinea(x1, y1, x2, y2, color) {
+    const puntos = [
+      new THREE.Vector3(x1, y1, 0.003),
+      new THREE.Vector3(x2, y2, 0.003)
+    ];
+
+    const geometria =
+      new THREE.BufferGeometry().setFromPoints(puntos);
+
+    const material = new THREE.LineBasicMaterial({
+      color: color,
+      depthTest: false
+    });
+
+    const linea = new THREE.Line(geometria, material);
+    linea.renderOrder = 999;
+
+    const entidad = document.createElement("a-entity");
+    entidad.setObject3D("mesh", linea);
+
+    diagnostico.appendChild(entidad);
+  }
+
+  function dibujarMarco() {
+    while (diagnostico.firstChild) {
+      diagnostico.removeChild(diagnostico.firstChild);
+    }
+
+    const x = ancho / 2;
+    const y = alto / 2;
+
+    // Contorno verde
+    agregarLinea(-x, -y, x, -y, 0x00ff00);
+    agregarLinea(x, -y, x, y, 0x00ff00);
+    agregarLinea(x, y, -x, y, 0x00ff00);
+    agregarLinea(-x, y, -x, -y, 0x00ff00);
+
+    const longitud = Math.min(ancho, alto) * 0.12;
+
+    function esquina(cx, cy, sx, sy, color) {
+      agregarLinea(
+        cx, cy,
+        cx + sx * longitud, cy,
+        color
+      );
+
+      agregarLinea(
+        cx, cy,
+        cx, cy + sy * longitud,
+        color
+      );
+    }
+
+    esquina(-x, y, 1, -1, 0xff0000);
+    esquina(x, y, -1, -1, 0xffff00);
+    esquina(-x, -y, 1, 1, 0x00ffff);
+    esquina(x, -y, -1, 1, 0xff00ff);
+  }
+
+  function actualizarGeometria() {
+    plano.setAttribute("geometry", {
+      primitive: "plane",
+      width: ancho * escalaVideo,
+      height: alto * escalaVideo
+    });
+
+    dibujarMarco();
+    ajustarTextura();
+  }
+
+  // ====================================
+  // LEER DIMENSIONES DE MINDAR
+  // ====================================
+
+  function leerDimensionesTarget() {
+    const sistema = escena.systems["mindar-image-system"];
+
+    if (!sistema || !sistema.controller) {
+      return false;
+    }
+
+    const controller = sistema.controller;
+
+    // Propiedad interna de MindAR 1.2.5.
+    // Puede variar entre versiones.
+    const dimensiones = controller.imageTargetDimensions;
+
+    if (!Array.isArray(dimensiones) ||
+        !dimensiones.length) {
+      return false;
+    }
+
+    const primera = dimensiones[0];
+
+    let w;
+    let h;
+
+    if (Array.isArray(primera)) {
+      w = Number(primera[0]);
+      h = Number(primera[1]);
+    } else if (primera && typeof primera === "object") {
+      w = Number(primera.width);
+      h = Number(primera.height);
+    }
+
+    if (!Number.isFinite(w) ||
+        !Number.isFinite(h) ||
+        w <= 0 || h <= 0) {
+      return false;
+    }
+
+    // MindAR normaliza el ancho del target a 1.
+    ancho = 1;
+    alto = h / w;
+
+    dimensionesDetectadas = true;
+
+    actualizarGeometria();
+
+    console.log(
+      "Dimensiones del target:",
+      w, h,
+      "Proporción:", ancho, alto
+    );
+
+    return true;
+  }
+
+  // ====================================
+  // AJUSTE DE TEXTURA DEL VIDEO
+  // ====================================
+
+  function ajustarTextura() {
+    const mesh = plano.getObject3D("mesh");
+
+    if (!mesh || !mesh.material ||
+        !mesh.material.map) {
+      return;
+    }
+
+    if (!video.videoWidth ||
+        !video.videoHeight) {
+      return;
+    }
+
+    const textura = mesh.material.map;
+
+    const relacionCuadro = ancho / alto;
+    const relacionVideo =
+      video.videoWidth / video.videoHeight;
+
+    let rx = 1;
+    let ry = 1;
+
+    if (relacionVideo > relacionCuadro) {
+      rx = relacionCuadro / relacionVideo;
+    } else {
+      ry = relacionVideo / relacionCuadro;
+    }
+
+    textura.repeat.set(rx, ry);
+    textura.offset.set(
+      (1 - rx) / 2,
+      (1 - ry) / 2
+    );
+
+    textura.needsUpdate = true;
+  }
+
+  video.addEventListener(
+    "loadedmetadata",
+    ajustarTextura
+  );
+
+  plano.addEventListener(
+    "object3dset",
+    ajustarTextura
+  );
+
+  // ====================================
+  // CONSTRUIR ESCENA
+  // ====================================
+
+  target.appendChild(plano);
+  target.appendChild(diagnostico);
+
+  escena.appendChild(assets);
+  escena.appendChild(camara);
+  escena.appendChild(target);
+
+  document.body.appendChild(escena);
+
+  dibujarMarco();
+
+  // ====================================
+  // RECONOCIMIENTO
+  // ====================================
+
+  let visible = false;
+
+  target.addEventListener(
+    "targetFound",
+    async function () {
+      visible = true;
+
+      if (!dimensionesDetectadas) {
+        leerDimensionesTarget();
+      }
+
+      mensaje(
+        dimensionesDetectadas
+          ? "Dimensiones detectadas. Compara las esquinas."
+          : "Dimensiones no disponibles. Usando medidas provisionales."
+      );
+
+      ajustarTextura();
+
+      try {
+        await video.play();
+      } catch (error) {
+        console.error(error);
+        mensaje("Toca activar sonido.");
+      }
+    }
+  );
+
+  target.addEventListener(
+    "targetLost",
+    function () {
+      visible = false;
+      video.pause();
+      mensaje("Apunta hacia la fotografía.");
+    }
+  );
+
+  // ====================================
+  // SONIDO
+  // ====================================
+
+  boton.addEventListener(
+    "click",
+    async function () {
+      video.muted = !video.muted;
+      video.volume = 1;
+
+      boton.textContent = video.muted
+        ? "🔇 Activar sonido"
+        : "🔊 Sonido activado";
+
+      if (visible) {
+        try {
+          await video.play();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+  );
+
+  // ====================================
+  // EVENTOS DE ESCENA
+  // ====================================
+
+  escena.addEventListener(
+    "arReady",
+    function () {
+      const encontrado = leerDimensionesTarget();
+
+      mensaje(
+        encontrado
+          ? "Target cargado. Apunta hacia la fotografía."
+          : "Apunta hacia la fotografía. Medidas provisionales."
+      );
+    }
+  );
+
+  escena.addEventListener(
+    "arError",
+    function (error) {
+      console.error(error);
+      mensaje("Error al iniciar la cámara.");
+    }
+  );
+
+  video.addEventListener(
+    "error",
+    function () {
+      mensaje("No se pudo cargar el video.");
+    }
+  );
+
+})();
+</script>
+
+</body>
+</html>
