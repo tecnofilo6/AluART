@@ -98,10 +98,12 @@ body {
     // ESCENA MINDAR
     const escena = document.createElement("a-scene");
 
-    escena.setAttribute(
-      "mindar-image",
-      "imageTargetSrc: " + targetUrl + ";"
-    );
+   escena.setAttribute(
+  "mindar-image",
+  "imageTargetSrc: " + targetUrl +
+  "; filterMinCF: 0.0001" +
+  "; filterBeta: 0.001;"
+);
 
     escena.setAttribute(
       "vr-mode-ui",
